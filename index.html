@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수시 입결 검색 — 2023~2026 대학어디가 발표자료</title>
+<meta name="description" content="2023~2026학년도 수시 입시결과(경쟁률·추합·등급컷)를 로그인 없이 즉시 검색하고 연도별로 비교합니다.">
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1a1f27; --muted:#6b7280; --line:#e5e7eb;
+  --accent:#2563eb; --accent-soft:#eff6ff; --accent-text:#1d4ed8;
+  --safe:#059669; --safe-bg:#ecfdf5; --fit:#d97706; --fit-bg:#fffbeb; --reach:#dc2626; --reach-bg:#fef2f2;
+  --badge-gyo:#0e7490; --badge-gyo-bg:#ecfeff; --badge-jong:#7c3aed; --badge-jong-bg:#f5f3ff; --badge-non:#be185d; --badge-non-bg:#fdf2f8;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1115; --card:#181b22; --text:#e7eaf0; --muted:#9aa3b2; --line:#2a2f3a;
+    --accent:#60a5fa; --accent-soft:#1e2a44; --accent-text:#93c5fd;
+    --safe:#34d399; --safe-bg:#0c2b21; --fit:#fbbf24; --fit-bg:#2e2410; --reach:#f87171; --reach-bg:#341418;
+    --badge-gyo:#67e8f9; --badge-gyo-bg:#103a44; --badge-jong:#c4b5fd; --badge-jong-bg:#2a2050; --badge-non:#f9a8d4; --badge-non-bg:#40142a;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"Apple SD Gothic Neo","Pretendard","Noto Sans KR",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+header.site h1{font-size:22px;margin:4px 0 2px}
+header.site p{margin:0;color:var(--muted);font-size:13px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.filters .full{grid-column:1/-1}
+.searchrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ac{position:relative}
+.sug{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);max-height:300px;overflow-y:auto;padding:4px}
+.sug button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:none;background:none;color:var(--text);font-family:inherit;font-size:13.5px;text-align:left;padding:8px 10px;border-radius:7px;cursor:pointer}
+.sug button:hover,.sug button.active{background:var(--accent-soft)}
+.sug button .cnt{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;flex-shrink:0}
+.sug button mark{background:none;color:var(--accent-text);font-weight:700}
+@media (max-width:640px){.searchrow{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+input[type=text],input[type=number],select{
+  width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--text);font-size:14px;font-family:inherit
+}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.gradebox{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.gradebox .hint{font-size:12px;color:var(--muted);flex:1;min-width:220px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;font-family:inherit}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text);font-weight:700}
+.summary{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:16px 4px 8px}
+.summary b{font-size:17px}
+.summary .n{color:var(--accent-text)}
+.summary .note{color:var(--muted);font-size:12.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:920px;font-size:13.5px}
+thead th{position:sticky;top:0;background:var(--card);text-align:left;padding:10px 10px;border-bottom:2px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;color:var(--muted);font-size:12.5px}
+thead th .arrow{color:var(--accent-text)}
+tbody td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--accent-soft)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;border-radius:6px;padding:1.5px 7px;font-size:11.5px;font-weight:700}
+.b-교과{color:var(--badge-gyo);background:var(--badge-gyo-bg)}
+.b-종합{color:var(--badge-jong);background:var(--badge-jong-bg)}
+.b-논술{color:var(--badge-non);background:var(--badge-non-bg)}
+.b-확인필요{color:var(--muted);background:var(--bg)}
+.judge{display:inline-block;border-radius:6px;padding:1.5px 8px;font-size:11.5px;font-weight:700}
+.j-안정{color:var(--safe);background:var(--safe-bg)}
+.j-적정{color:var(--fit);background:var(--fit-bg)}
+.j-도전{color:var(--reach);background:var(--reach-bg)}
+.j-어려움{color:var(--muted);background:var(--bg)}
+.delta{font-size:10.5px;font-weight:700;margin-left:4px;font-variant-numeric:tabular-nums}
+.delta.plus{color:var(--safe)}
+.delta.minus{color:var(--reach)}
+.delta.zero{color:var(--muted)}
+.more{display:block;margin:14px auto 0;padding:10px 26px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:14px;cursor:pointer;font-family:inherit}
+.more:hover{border-color:var(--accent)}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+/* detail modal */
+dialog{border:none;border-radius:14px;padding:0;max-width:720px;width:calc(100vw - 32px);background:var(--card);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.d-head{display:flex;justify-content:space-between;align-items:start;gap:10px;padding:18px 20px 6px}
+.d-head h2{margin:0;font-size:18px}
+.d-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.d-close{border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:4px}
+.d-body{padding:8px 20px 20px}
+.d-body .tablewrap{border-radius:10px}
+.d-body table{min-width:560px}
+footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
+@media (max-width:640px){
+  body{font-size:14px}
+  .filters{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <h1>수시 입결 검색 <span style="font-weight:400;color:var(--muted);font-size:14px">2023~2026학년도</span></h1>
+    <p>대학어디가 발표자료 기반 · 로그인 없음 · 설치 없음 · 모든 검색은 브라우저 안에서 즉시 처리됩니다</p>
+  </header>
+
+  <section class="panel" aria-label="검색 필터">
+    <div class="filters">
+      <div class="full searchrow">
+        <label class="f ac">대학 검색
+          <input type="text" id="qUniv" placeholder="예: 고려대" autocomplete="off" role="combobox" aria-expanded="false">
+          <div class="sug" id="sugUniv" hidden></div>
+        </label>
+        <label class="f ac">학과 검색
+          <input type="text" id="qDept" placeholder="예: 간호, 컴퓨터" autocomplete="off" role="combobox" aria-expanded="false">
+          <div class="sug" id="sugDept" hidden></div>
+        </label>
+        <label class="f ac">전형 검색
+          <input type="text" id="qAdm" placeholder="예: 논술, 지역인재" autocomplete="off" role="combobox" aria-expanded="false">
+          <div class="sug" id="sugAdm" hidden></div>
+        </label>
+      </div>
+      <label class="f">학년도
+        <select id="fYear"><option value="">전체</option></select>
+      </label>
+      <label class="f">지역
+        <select id="fRegion"><option value="">전체</option></select>
+      </label>
+      <label class="f">전형 유형
+        <select id="fMethod"><option value="">전체</option></select>
+      </label>
+      <label class="f">계열
+        <select id="fTrack"><option value="">전체</option></select>
+      </label>
+      <label class="f">소계열
+        <select id="fCat"><option value="">전체</option></select>
+      </label>
+    </div>
+    <div class="gradebox">
+      <label class="f" style="max-width:170px">내 내신 등급 (선택)
+        <input type="number" id="myGrade" min="1" max="9" step="0.01" placeholder="예: 2.35">
+      </label>
+      <div class="chips" id="judgeChips" hidden>
+        <button class="chip" data-j="안정" aria-pressed="false">안정</button>
+        <button class="chip" data-j="적정" aria-pressed="false">적정</button>
+        <button class="chip" data-j="도전" aria-pressed="false">도전</button>
+      </div>
+      <p class="hint">등급을 입력하면 70%컷(등급70) 기준 <b>안정·적정·도전·어려움</b> 판정과 컷과의 차이(±)가 표시됩니다. 버튼을 누르면 해당 판정만 남습니다. 입결은 참고용이며 해마다 변동됩니다.</p>
+    </div>
+  </section>
+
+  <div class="summary">
+    <b><span class="n" id="count">0</span>건</b>
+    <span class="note" id="scope"></span>
+    <span class="note">행을 클릭하면 연도별 추이를 볼 수 있습니다</span>
+  </div>
+
+  <div class="tablewrap">
+    <table id="tbl">
+      <thead><tr id="theadRow"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>조건에 맞는 결과가 없습니다</div>
+  </div>
+  <button class="more" id="moreBtn" hidden>더 보기</button>
+
+  <dialog id="detail">
+    <div class="d-head">
+      <div><h2 id="dTitle"></h2><p id="dSub"></p></div>
+      <button class="d-close" id="dClose" aria-label="닫기">×</button>
+    </div>
+    <div class="d-body">
+      <div class="tablewrap">
+        <table id="dTable">
+          <thead><tr>
+            <th>학년도</th><th class="num">모집인원</th><th class="num">경쟁률</th><th class="num">추합</th>
+            <th class="num">등급50%</th><th class="num">등급70%</th><th class="num">변환50%</th><th class="num">실경쟁률</th>
+          </tr></thead>
+          <tbody id="dBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </dialog>
+
+  <footer>
+    데이터: 대학어디가(adiga.kr) 대학 발표자료 정리본 (남악고 김현석, ver 07.03) · 2023~2026학년도 수시 <span id="statTotal"></span><br>
+    등급50%·등급70%는 최종등록자 상위 50%·70% 지점의 학생부 등급입니다. 대학이 발표한 자료의 집계 시점·기준에 따라 실제 요강과 다를 수 있으며, 지원 판단의 참고자료로만 사용하세요.
+  </footer>
+</div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
