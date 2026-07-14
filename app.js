@@ -9,16 +9,20 @@
 (function () {
   'use strict';
   const RAW = window.ADIGA_DATA, LINKS = window.ADIGA_LINKS || {};
-  // 자체등급변환 표: 원본의 5등급 열은 백분위 약 80 이하 구간에서 수식이 깨져
-  // 8542.5 같은 값이 들어 있다. 등급 범위를 벗어난 값은 결측으로 버린다(9등급 열은 정상).
+  // 자체등급변환 표: 원본의 5등급 열은 백분위 약 90 아래 구간에서 수식이 깨져
+  // 8542.5 같은 값이 들어 있다. 9등급 열도 백분위 3.9 이하에서 9.0011로 범위를 넘는다.
+  // 두 열 모두 등급 범위를 벗어난 값은 결측으로 버린다.
   const GRADE = (window.ADIGA_GRADE || []).map(([p, g9, g5]) =>
-    [p, g9, (g5 > 0 && g5 <= 5) ? g5 : null]);
-  // 위(백분위 100)에서부터 값이 성한 구간까지만 5등급을 신뢰한다. 그 아래는 산발적으로
+    [p, (g9 >= 1 && g9 <= 9) ? g9 : null, (g5 >= 1 && g5 <= 5) ? g5 : null]);
+  // 위(백분위 100)에서부터 값이 성한 구간까지만 신뢰한다. 그 아래는 산발적으로
   // 값이 남아 있어도 깨진 수식의 잔재이므로 함께 버린다.
-  let g5End = 0;
-  while (g5End < GRADE.length && GRADE[g5End][2] != null) g5End++;
-  for (let k = g5End; k < GRADE.length; k++) GRADE[k][2] = null;
-  const G5_MIN = g5End ? GRADE[g5End - 1][0] : null;   // 5등급이 유효한 최저 백분위
+  function trimTail(col) {
+    let end = 0;
+    while (end < GRADE.length && GRADE[end][col] != null) end++;
+    for (let k = end; k < GRADE.length; k++) GRADE[k][col] = null;
+    return end ? GRADE[end - 1][0] : null;   // 유효한 최저 백분위
+  }
+  const G9_MIN = trimTail(1), G5_MIN = trimTail(2);
   const D = RAW.dicts, C = RAW.cols, N = RAW.n;
 
   const univ = C['대학'], region = C['지역'], year = C['연도'], method = C['교과/종합'],
@@ -26,6 +30,10 @@
         seats = C['모집인원'], comp = C['경쟁률'], chuhap = C['추합'],
         g50 = C['등급50'], g70 = C['등급70'], v50 = C['변환50'], v70 = C['변환70'],
         vmax = C['만점'], applied = C['총지원지원'], passed = C['합격인원'], realComp = C['실경쟁률'];
+
+  // 원본 소계열 열에는 미분류 행이 빈칸과 '0.0' 두 가지로 섞여 있다. 하나로 합쳐
+  // 필터 목록과 집계 그룹에서 똑같이 빠지게 한다.
+  D['소계열'] = D['소계열'].map(s => (s === '0.0' ? '' : s));
 
   // 원본에 미발표 데이터가 0으로 기재된 행 정규화(주로 2026학년도).
   // 등급·변환점수·경쟁률·모집인원 0은 실존할 수 없는 값이므로 결측으로 취급한다.
@@ -35,6 +43,15 @@
     if (realComp[i] === 0) realComp[i] = null;
     if (seats[i] === 0) seats[i] = null;
     if (chuhap[i] === 0 && comp[i] == null && g50[i] == null && g70[i] == null) chuhap[i] = null;
+
+    // 원본 변환점수 열에 9999가 결측 표시로 들어간 행이 있다(전주대 2025).
+    if (v50[i] === 9999) v50[i] = null;
+    if (v70[i] === 9999) v70[i] = null;
+    // 원본 만점 열이 깨진 행이 있다(신라대 2023 만점 6.3, 경기대 2023 만점 9 등).
+    // 변환점수가 만점을 5% 넘게 웃돌면 만점 쪽을 못 믿는다 → 환산백분위를 비운다.
+    // 5% 이내 초과는 가산점·반올림으로 설명되므로 그대로 둔다.
+    const hi = Math.max(v50[i] != null ? v50[i] : -Infinity, v70[i] != null ? v70[i] : -Infinity);
+    if (vmax[i] != null && hi > vmax[i] * 1.05) vmax[i] = null;
   }
   // 변환점수를 만점 대비 백분위로 환산(원본 수시분석시트의 '단순백분위')
   function pctScore(i) {
@@ -528,16 +545,23 @@
     if (!rowsByUniv.has(univ[i])) rowsByUniv.set(univ[i], []);
     rowsByUniv.get(univ[i]).push(i);
   }
+  // 원본 대학링크 시트의 '학과안내자료' 열은 전 대학이 비어 있어 싣지 않는다.
   const LINK_LABELS = [['입학처홈페이지', '입학처'], ['대학교 입결발표', '입결 발표'], ['대학알리미', '대학알리미'],
-    ['학과안내자료', '학과 안내'], ['종합전형가이드북', '종합전형 가이드북'], ['2026', '어디가 2026'], ['2027', '어디가 2027']];
+    ['종합전형가이드북', '종합전형 가이드북'], ['2026', '어디가 2026'], ['2027', '어디가 2027']];
+  // 대학자료와 대학링크 시트의 캠퍼스 표기가 서로 다른 대학들.
+  const LINK_ALIAS = { '중앙대(다빈치)': '중앙대2캠', '홍익대(세)': '홍익대' };
 
   function renderUnivLinks(name) {
     const box = $('uLinks');
-    const e = LINKS[name];
-    if (!e) { box.innerHTML = '<span class="none">이 대학의 링크 정보가 원본에 없습니다</span>'; return; }
-    box.innerHTML = LINK_LABELS.filter(([k]) => e[k])
-      .map(([k, label]) => `<a class="linkbtn" href="${esc(e[k])}" target="_blank" rel="noopener">${esc(label)} ↗</a>`).join('')
-      || '<span class="none">이 대학의 링크 정보가 원본에 없습니다</span>';
+    const alias = LINK_ALIAS[name];
+    const e = LINKS[name] || (alias ? LINKS[alias] : null);
+    const none = '<span class="none">이 대학의 링크 정보가 원본에 없습니다</span>';
+    if (!e) { box.innerHTML = none; return; }
+    const btns = LINK_LABELS.filter(([k]) => e[k])
+      .map(([k, label]) => `<a class="linkbtn" href="${esc(e[k])}" target="_blank" rel="noopener">${esc(label)} ↗</a>`).join('');
+    if (!btns) { box.innerHTML = none; return; }
+    box.innerHTML = btns + (LINKS[name] ? ''
+      : `<span class="none">원본 링크 시트의 <b>${esc(alias)}</b> 기준입니다</span>`);
   }
 
   function renderUniv() {
@@ -708,6 +732,8 @@
 
   /* ================= 탭 4: 등급 변환 ================= */
   // GRADE: [기준백분위, 9등급, 5등급] · 백분위 내림차순
+  // 결측 구간(원본 수식이 깨진 아래쪽)은 보간하지 않고 그대로 결측으로 돌려준다.
+  const lerp = (a, b, t) => (a == null || b == null) ? null : a + (b - a) * t;
   function pctToGrade(p) {
     if (!GRADE.length || !(p >= 0 && p <= 100)) return [null, null];
     for (let k = 0; k < GRADE.length; k++) {
@@ -716,7 +742,7 @@
         if (k === 0) return [g9, g5];
         const [pp, p9, p5] = GRADE[k - 1];   // 한 칸 위(더 높은 백분위)
         const t = (p - gp) / (pp - gp);      // 선형 보간
-        return [g9 + (p9 - g9) * t, g5 != null && p5 != null ? g5 + (p5 - g5) * t : g5];
+        return [lerp(g9, p9, t), lerp(g5, p5, t)];
       }
     }
     const last = GRADE[GRADE.length - 1];
@@ -726,8 +752,13 @@
   // 입력 등급 이상이 되는 첫 지점의 기준 백분위를 돌려준다.
   function gradeToPct(g) {
     if (!GRADE.length || !(g >= 1 && g <= 9)) return null;
-    for (const [p, g9] of GRADE) if (g9 >= g) return p;
-    return GRADE[GRADE.length - 1][0];
+    let lastValid = null;
+    for (const [p, g9] of GRADE) {
+      if (g9 == null) break;                 // 결측 구간부터는 표를 믿지 않는다
+      if (g9 >= g) return p;
+      lastValid = p;
+    }
+    return lastValid;   // 표가 닿는 최저 백분위까지 내려가도 등급에 못 미치는 경우
   }
   $('cvPct').addEventListener('input', () => {
     const p = parseFloat($('cvPct').value);
@@ -739,11 +770,13 @@
     const p = gradeToPct(parseFloat($('cvGrade').value));
     $('cvPctOut').textContent = p == null ? '–' : p.toFixed(1);
   });
-  $('gNote').textContent = G5_MIN != null
-    ? `원본 시트의 5등급 열은 백분위 ${G5_MIN.toFixed(1)} 아래 구간에서 수식이 깨져 있어(등급 범위를 벗어난 값) 해당 구간은 –로 비워 두었습니다. 9등급 열은 전 구간 정상입니다.`
-    : '';
+  const notes = [];
+  if (G5_MIN != null) notes.push(`5등급 열은 백분위 ${G5_MIN.toFixed(1)} 아래 구간에서 수식이 깨져 있습니다(8542.5 같은 값).`);
+  if (G9_MIN != null && G9_MIN > GRADE[GRADE.length - 1][0]) notes.push(`9등급 열도 백분위 ${G9_MIN.toFixed(1)} 아래 구간에서 9를 넘는 값이 나옵니다.`);
+  $('gNote').textContent = notes.length
+    ? '원본 시트의 ' + notes.join(' ') + ' 등급 범위를 벗어난 구간은 –로 비워 두었습니다.' : '';
   $('gTbody').innerHTML = GRADE.map(([p, g9, g5]) =>
-    `<tr><td class="num"><b>${p.toFixed(1)}</b></td><td class="num">${g9.toFixed(2)}</td><td class="num">${g5 == null ? '–' : g5.toFixed(2)}</td></tr>`).join('');
+    `<tr><td class="num"><b>${p.toFixed(1)}</b></td><td class="num">${g9 == null ? '–' : g9.toFixed(2)}</td><td class="num">${g5 == null ? '–' : g5.toFixed(2)}</td></tr>`).join('');
 
   /* ================= 탭 5: 대학 링크 ================= */
   function renderLinks() {
@@ -755,7 +788,7 @@
       const adiga = e['2026'] || e['2027'];
       return `<tr style="cursor:default"><td><b>${esc(n)}</b></td>`
         + `<td>${cell(e, '입학처홈페이지')}</td><td>${cell(e, '대학교 입결발표')}</td><td>${cell(e, '대학알리미')}</td>`
-        + `<td>${cell(e, '학과안내자료')}</td><td>${cell(e, '종합전형가이드북')}</td>`
+        + `<td>${cell(e, '종합전형가이드북')}</td>`
         + `<td>${adiga ? `<a class="linkbtn" href="${esc(adiga)}" target="_blank" rel="noopener">어디가 ↗</a>` : '<span style="color:var(--muted)">–</span>'}</td></tr>`;
     }).join('');
     $('lCount').textContent = names.length;
