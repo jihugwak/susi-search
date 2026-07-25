@@ -145,13 +145,224 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
   body{font-size:14px}
   .filters{grid-template-columns:repeat(2,1fr)}
 }
+
+/* ===== 회원제 게이트 / 사용자 바 ===== */
+#bootMsg{max-width:1180px;margin:60px auto;text-align:center;color:var(--muted);font-size:14px}
+.gate{max-width:440px;margin:48px auto;padding:0 16px}
+.gate-brand{text-align:center;margin-bottom:22px}
+.gate-brand h1{font-size:24px;margin:0 0 4px}
+.gate-brand p{margin:0;color:var(--muted);font-size:13.5px}
+.gate .panel{margin-top:0}
+.gate .field{margin-bottom:14px}
+.gate .field:last-of-type{margin-bottom:0}
+.gate label.fl{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.gate .genderrow{display:flex;gap:8px}
+.gate .genderrow button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;padding:9px 0;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.gate .genderrow button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-text)}
+.gate .submit{width:100%;margin-top:6px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-family:inherit;font-size:14.5px;font-weight:700;padding:11px 0;cursor:pointer}
+.gate .submit:disabled{opacity:.6;cursor:default}
+.gate .err{color:var(--reach);font-size:13px;margin:2px 0 0;min-height:1em}
+.gate .swap{text-align:center;margin-top:16px;font-size:13.5px;color:var(--muted)}
+.gate .swap a{color:var(--accent-text);font-weight:600;cursor:pointer;text-decoration:none}
+.gate .done{text-align:center;padding:12px 0}
+.gate .done .ic{font-size:40px}
+.gate .done h2{margin:8px 0 6px;font-size:18px}
+.gate .done p{color:var(--muted);font-size:13.5px;line-height:1.7}
+#userBar{display:flex;align-items:center;gap:10px;position:absolute;top:20px;right:16px;font-size:13px}
+#userBar .ub-name{display:flex;flex-direction:column;line-height:1.2;text-align:right}
+#userBar .ub-school{color:var(--muted);font-size:11px}
+#userBar .ub-logout{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+#userBar .ub-logout:hover{border-color:var(--accent);color:var(--accent-text)}
+header.site{position:relative}
+
+/* ===== 일정 구분 색 (원본 globals.css 이관) ===== */
+.cat-apply{background:#3b5bdb}.cat-recommend{background:#1098ad}.cat-doc{background:#5c7cfa}
+.cat-step1{background:#2f9e44}.cat-interview{background:#7048e8}.cat-essay{background:#e03131}
+.cat-practical{background:#e8590c}.cat-final{background:#c2255c}.cat-extra{background:#087f5b}
+.cat-suneung{background:#f08c00}.cat-etc{background:#868e96}
+
+/* ===== 수시 달력 탭 ===== */
+.cal-empty{text-align:center;padding:64px 16px;color:var(--muted)}
+.cal-empty-icon{font-size:40px;margin-bottom:12px}
+.cal-empty h2{font-size:18px;color:var(--text);margin:0 0 8px}
+.cal-empty p{font-size:13.5px;margin:0 auto;max-width:360px;line-height:1.7}
+.cal-cta{margin-top:20px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-family:inherit;font-size:14px;font-weight:700;padding:10px 20px;cursor:pointer}
+.cal-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-btn{width:34px;height:34px;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;font-size:16px;cursor:pointer;font-family:inherit}
+.cal-btn.cal-today{width:auto;padding:0 14px;font-size:13.5px;color:var(--text)}
+.cal-btn:hover{border-color:var(--accent)}
+.cal-period{font-size:18px;font-weight:700;margin:0 4px}
+.cal-views{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.cal-view{border:none;background:var(--card);color:var(--muted);font-family:inherit;font-size:13.5px;font-weight:600;padding:7px 14px;cursor:pointer}
+.cal-view.on{background:var(--accent);color:#fff}
+.cal-body{margin-top:14px}
+/* 월 뷰 */
+.cal-month{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.cal-month-head{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--line)}
+.cal-wd{padding:8px 0;text-align:center;font-size:12px;font-weight:600;color:var(--muted)}
+.cal-wd.sun{color:var(--reach)}.cal-wd.sat{color:var(--accent)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(96px,1fr)}
+.cal-cell{position:relative;text-align:left;border-bottom:1px solid var(--line);border-right:1px solid var(--line);background:var(--card);padding:4px;overflow:hidden;display:flex;flex-direction:column;gap:2px;cursor:pointer;font-family:inherit}
+.cal-cell:nth-child(7n){border-right:none}
+.cal-cell.out{opacity:.4}
+.cal-cell:hover{background:var(--accent-soft)}
+.cal-dnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;font-size:12px;color:var(--text)}
+.cal-dnum.today{background:var(--accent);color:#fff;font-weight:700}
+.cal-dnum.sun{color:var(--reach)}.cal-dnum.sat{color:var(--accent)}
+.cal-pills{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.cal-pill{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;line-height:1.4;color:#fff;border-radius:4px;padding:1px 5px;cursor:pointer}
+.cal-more{font-size:10.5px;color:var(--muted);padding-left:4px}
+/* 주 뷰 */
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+@media (max-width:900px){.cal-week{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:560px){.cal-week{grid-template-columns:repeat(2,1fr)}}
+.cal-wcard{border:1px solid var(--line);border-radius:12px;background:var(--card);display:flex;flex-direction:column;min-height:128px;overflow:hidden}
+.cal-whead{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);background:none;border-left:0;border-right:0;border-top:0;cursor:pointer;font-family:inherit;text-align:left}
+.cal-whead.sun{color:var(--reach)}.cal-whead.sat{color:var(--accent)}
+.cal-wdnum{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:999px;font-size:12.5px}
+.cal-wdnum.today{background:var(--accent);color:#fff}
+.cal-wwd{font-size:12px;color:var(--muted)}
+.cal-wbody{padding:6px;display:flex;flex-direction:column;gap:4px}
+.cal-wpill{text-align:left;border:none;border-radius:6px;color:#fff;font-size:11px;line-height:1.35;padding:5px 7px;cursor:pointer;font-family:inherit}
+.cal-none{font-size:11.5px;color:var(--muted);padding:6px 4px}
+/* 일 뷰 */
+.cal-day{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden}
+.cal-dhead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.cal-dtitle{font-size:16px;font-weight:700}
+.cal-badge-today{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--accent);color:#fff}
+.cal-dlist{padding:12px;display:flex;flex-direction:column;gap:8px}
+.cal-dnoev{text-align:center;color:var(--muted);font-size:13.5px;padding:40px 0}
+.cal-drow{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card);cursor:pointer;font-family:inherit}
+.cal-drow:hover{background:var(--accent-soft)}
+.cal-dcat{flex-shrink:0;font-size:11px;color:#fff;border-radius:6px;padding:2px 8px;margin-top:1px}
+.cal-dinfo{min-width:0;display:flex;flex-direction:column;gap:2px}
+.cal-duniv{font-weight:600}
+.cal-dtime{margin-left:8px;font-size:12px;font-weight:400;color:var(--muted)}
+.cal-dadm{font-size:13px;color:var(--muted)}
+.cal-dnote{font-size:12px;color:var(--muted)}
+/* 범례 / 유의사항 */
+.cal-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;font-size:12px;color:var(--muted)}
+.cal-leg{display:inline-flex;align-items:center;gap:6px}
+.cal-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.cal-notice{margin-top:16px}
+.cal-notice h3{font-size:14px;margin:0 0 8px}
+.cal-notice p{font-size:12.5px;color:var(--muted);line-height:1.7;white-space:pre-wrap;margin:0}
+/* 이벤트 모달 */
+.cal-md-head{display:flex;align-items:center;gap:10px}
+.cal-md-title{font-size:18px;margin:12px 0 0}
+.cal-md-dl{margin:14px 0 0;display:flex;flex-direction:column;gap:10px}
+.cal-md-row{display:flex;gap:12px;font-size:14px}
+.cal-md-row dt{width:48px;flex-shrink:0;color:var(--muted);margin:0}
+.cal-md-row dd{margin:0;font-weight:600}
+
+/* ===== 설정 탭 ===== */
+.set-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.set-title{font-size:18px;font-weight:700;margin:0;margin-right:auto}
+.set-count{font-size:13px;padding:5px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+.set-count b.over{color:var(--reach)}
+.set-save{border:none;border-radius:8px;background:var(--accent);color:#fff;font-family:inherit;font-size:14px;font-weight:700;padding:9px 18px;cursor:pointer}
+.set-save:disabled{opacity:.6;cursor:default}
+.set-msg{font-size:13.5px;margin:12px 0 0}
+.set-msg.ok{color:var(--safe)}.set-msg.err{color:var(--reach)}
+.set-desc{font-size:13.5px;color:var(--muted);margin:12px 0 0}
+.set-search{margin-top:14px}
+.set-list{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:640px){.set-list{grid-template-columns:1fr}}
+.set-none{font-size:13.5px;color:var(--muted);grid-column:1/-1;text-align:center;padding:24px 0}
+.set-item{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:10px 12px}
+.set-uname{font-weight:600}
+.set-tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent-text);font-weight:600}
+.set-acts{margin-left:auto;display:flex;gap:6px}
+.set-toggle{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;cursor:pointer}
+.set-toggle.i.on{border-color:var(--accent);background:var(--accent);color:#fff}
+.set-toggle.a.on{border-color:var(--cat-recommend, #1098ad);background:#1098ad;color:#fff}
+.set-summary{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:640px){.set-summary{grid-template-columns:1fr}}
+.set-sumcol h3{font-size:13.5px;margin:0 0 8px}
+.set-sum-i h3{color:var(--accent-text)}
+.set-sum-a h3{color:#0c7d8c}
+.set-chips{display:flex;flex-wrap:wrap;gap:6px}
+.set-chip{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;font-family:inherit;font-size:12.5px;padding:5px 11px;cursor:pointer}
+.set-chip:hover{border-color:var(--reach);color:var(--reach)}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="bootMsg">불러오는 중…</div>
+
+<!-- ================= 회원제 로그인 게이트 ================= -->
+<div id="authGate" class="gate" hidden>
+  <div class="gate-brand">
+    <h1>수시 입결 검색</h1>
+    <p>회원 전용 서비스 · 로그인 후 모든 기능을 이용할 수 있습니다</p>
+  </div>
+
+  <!-- 로그인 -->
+  <div id="gateLogin">
+    <form id="loginForm" class="panel" style="margin-top:0">
+      <div class="field">
+        <label class="fl" for="liId">아이디</label>
+        <input type="text" id="liId" autocomplete="username" placeholder="아이디">
+      </div>
+      <div class="field">
+        <label class="fl" for="liPw">비밀번호</label>
+        <input type="password" id="liPw" autocomplete="current-password" placeholder="비밀번호">
+      </div>
+      <p class="err" id="loginError"></p>
+      <button type="submit" class="submit" id="loginSubmit">로그인</button>
+    </form>
+    <p class="swap">아직 회원이 아니신가요? <a id="toSignup">회원가입</a></p>
+  </div>
+
+  <!-- 회원가입 -->
+  <div id="gateSignup" hidden>
+    <form id="signupForm" class="panel" style="margin-top:0">
+      <div class="field">
+        <label class="fl" for="suName">이름</label>
+        <input type="text" id="suName" placeholder="이름">
+      </div>
+      <div class="field">
+        <label class="fl" for="suId">아이디</label>
+        <input type="text" id="suId" autocomplete="username" placeholder="영문/숫자/밑줄 4~20자">
+      </div>
+      <div class="field">
+        <label class="fl" for="suSchool">소속 학교</label>
+        <select id="suSchool"><option value="">학교를 선택하세요</option></select>
+      </div>
+      <div class="field">
+        <label class="fl" for="suPw">비밀번호</label>
+        <input type="password" id="suPw" autocomplete="new-password" placeholder="4자 이상">
+      </div>
+      <div class="field">
+        <label class="fl">성별</label>
+        <div class="genderrow" id="suGender">
+          <button type="button" data-g="남" aria-pressed="false">남</button>
+          <button type="button" data-g="여" aria-pressed="false">여</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="fl" for="suGpa">내신 성적 <span style="color:var(--muted);font-weight:400">(석차 등급 산출 과목 단순 합산)</span></label>
+        <input type="number" id="suGpa" step="0.01" min="0" placeholder="예: 1.50">
+      </div>
+      <p class="err" id="signupError"></p>
+      <button type="submit" class="submit" id="signupSubmit">회원가입</button>
+    </form>
+    <div id="signupDone" class="panel done" style="margin-top:0" hidden>
+      <div class="ic">✅</div>
+      <h2>가입 신청 완료</h2>
+      <p><b class="sd-name"></b>님의 가입 신청이 접수되었습니다.<br>관리자 승인 후 로그인할 수 있습니다.</p>
+      <p class="swap" style="margin-top:14px"><a id="toLoginDone">로그인 화면으로</a></p>
+    </div>
+    <p class="swap">이미 계정이 있으신가요? <a id="toLogin">로그인</a></p>
+  </div>
+</div>
+
+<!-- ================= 앱 (로그인 후) ================= -->
+<div class="wrap" id="appWrap" hidden>
   <header class="site">
+    <div id="userBar" hidden></div>
     <h1>수시 입결 검색 <span style="font-weight:400;color:var(--muted);font-size:14px">수시입결검색</span></h1>
-    <p>대학어디가 발표자료 기반 · 로그인 없음 · 설치 없음 · 모든 계산은 브라우저 안에서 즉시 처리됩니다</p>
+    <p>대학어디가 발표자료 기반 · 회원 전용 · 모든 계산은 브라우저 안에서 즉시 처리됩니다</p>
   </header>
 
   <nav class="tabs" role="tablist">
@@ -160,6 +371,8 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
     <button role="tab" id="tab-pivot" aria-selected="false" data-tab="pivot">집계·연도비교</button>
     <button role="tab" id="tab-grade" aria-selected="false" data-tab="grade">등급 변환</button>
     <button role="tab" id="tab-links" aria-selected="false" data-tab="links">대학 링크</button>
+    <button role="tab" id="tab-cal" aria-selected="false" data-tab="cal">수시 달력</button>
+    <button role="tab" id="tab-settings" aria-selected="false" data-tab="settings">설정</button>
   </nav>
 
   <!-- ================= 검색 ================= -->
@@ -337,6 +550,12 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
     </div>
   </section>
 
+  <!-- ================= 수시 달력 ================= -->
+  <section id="pane-cal" role="tabpanel" hidden></section>
+
+  <!-- ================= 관심대학·지원예정 설정 ================= -->
+  <section id="pane-settings" role="tabpanel" hidden></section>
+
   <dialog id="detail">
     <div class="d-head">
       <div><h2 id="dTitle"></h2><p id="dSub"></p></div>
@@ -357,6 +576,10 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
     </div>
   </dialog>
 
+  <dialog id="calDetail">
+    <div class="d-body" id="calDetailBody"></div>
+  </dialog>
+
   <footer>
     데이터: 대학어디가(adiga.kr) 대학 발표자료 정리본 (남악고 김현석, ver 07.03) · 2023~2026학년도 수시 <span id="statTotal"></span><br>
     등급50%·등급70%는 최종등록자 상위 50%·70% 지점의 학생부 등급입니다. 대학이 발표한 자료의 집계 시점·기준에 따라 실제 요강과 다를 수 있으며, 지원 판단의 참고자료로만 사용하세요.<br>
@@ -367,6 +590,10 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
 <script src="data.js"></script>
 <script src="links.js"></script>
 <script src="grade.js"></script>
+<script src="calendar-data.js"></script>
+<script src="auth.js"></script>
+<script src="calendar.js"></script>
+<script src="settings.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

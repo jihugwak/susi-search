@@ -259,11 +259,14 @@
   dlg.addEventListener('close', hideTip);
 
   /* ================= 탭 ================= */
-  const panes = { search: $('pane-search'), univ: $('pane-univ'), pivot: $('pane-pivot'), grade: $('pane-grade'), links: $('pane-links') };
+  const panes = { search: $('pane-search'), univ: $('pane-univ'), pivot: $('pane-pivot'), grade: $('pane-grade'), links: $('pane-links'), cal: $('pane-cal'), settings: $('pane-settings') };
   function showTab(name) {
     if (!panes[name]) return;
     for (const btn of document.querySelectorAll('nav.tabs button')) btn.setAttribute('aria-selected', String(btn.dataset.tab === name));
     for (const [k, el] of Object.entries(panes)) el.hidden = k !== name;
+    // 추가 탭은 열릴 때 지연 렌더 (calendar.js / settings.js)
+    if (name === 'cal' && window.Calendar) window.Calendar.ensureRendered();
+    if (name === 'settings' && window.SettingsTab) window.SettingsTab.ensureRendered();
   }
   document.querySelector('nav.tabs').addEventListener('click', e => {
     const b = e.target.closest('button[data-tab]');
