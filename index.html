@@ -51,7 +51,7 @@ header.site p{margin:0;color:var(--muted);font-size:13px}
 .sug button mark{background:none;color:var(--accent-text);font-weight:700}
 @media (max-width:640px){.searchrow{grid-template-columns:1fr}}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
-input[type=text],input[type=number],select{
+input[type=text],input[type=number],input[type=password],select{
   width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
   background:var(--bg);color:var(--text);font-size:14px;font-family:inherit
 }
@@ -312,6 +312,7 @@ header.site{position:relative}
       <button type="submit" class="submit" id="loginSubmit">로그인</button>
     </form>
     <p class="swap">아직 회원이 아니신가요? <a id="toSignup">회원가입</a></p>
+    <p class="swap" style="margin-top:8px;font-size:12.5px"><a href="https://susi-calendar-2027.vercel.app/admin" target="_blank" rel="noopener">관리자 모드</a></p>
   </div>
 
   <!-- 회원가입 -->
