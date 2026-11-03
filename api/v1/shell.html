@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수시입결검색</title>
+<meta name="description" content="수시 입시결과(경쟁률·추합·등급컷)를 로그인 없이 즉시 검색하고, 대학별 분석·집계·등급변환까지 한 곳에서 확인합니다.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="수시입결검색">
+<meta property="og:description" content="수시 입시결과를 로그인 없이 즉시 검색하세요.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="수시입결검색">
+<meta name="twitter:description" content="수시 입시결과를 로그인 없이 즉시 검색하세요.">
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --text:#1a1f27; --muted:#6b7280; --line:#e5e7eb;
+  --accent:#2563eb; --accent-soft:#eff6ff; --accent-text:#1d4ed8;
+  --safe:#059669; --safe-bg:#ecfdf5; --fit:#d97706; --fit-bg:#fffbeb; --reach:#dc2626; --reach-bg:#fef2f2;
+  --badge-gyo:#0e7490; --badge-gyo-bg:#ecfeff; --badge-jong:#7c3aed; --badge-jong-bg:#f5f3ff; --badge-non:#be185d; --badge-non-bg:#fdf2f8;
+  /* chart roles */
+  --grid:#e1e0d9; --axis:#c3c2b7; --ink-muted:#898781;
+  --s1:#2a78d6; --s2:#1baf7a; --s3:#eda100; --s4:#008300; --s5:#4a3aa7; --s6:#e34948; --s7:#e87ba4; --s8:#eb6834;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1115; --card:#181b22; --text:#e7eaf0; --muted:#9aa3b2; --line:#2a2f3a;
+    --accent:#60a5fa; --accent-soft:#1e2a44; --accent-text:#93c5fd;
+    --safe:#34d399; --safe-bg:#0c2b21; --fit:#fbbf24; --fit-bg:#2e2410; --reach:#f87171; --reach-bg:#341418;
+    --badge-gyo:#67e8f9; --badge-gyo-bg:#103a44; --badge-jong:#c4b5fd; --badge-jong-bg:#2a2050; --badge-non:#f9a8d4; --badge-non-bg:#40142a;
+    --grid:#2c2c2a; --axis:#383835; --ink-muted:#898781;
+    --s1:#3987e5; --s2:#199e70; --s3:#c98500; --s4:#008300; --s5:#9085e9; --s6:#e66767; --s7:#d55181; --s8:#d95926;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"Apple SD Gothic Neo","Pretendard","Noto Sans KR",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+header.site h1{font-size:22px;margin:4px 0 2px}
+header.site p{margin:0;color:var(--muted);font-size:13px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.filters .full{grid-column:1/-1}
+.searchrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ac{position:relative}
+.sug{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);max-height:300px;overflow-y:auto;padding:4px}
+.sug button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:none;background:none;color:var(--text);font-family:inherit;font-size:13.5px;text-align:left;padding:8px 10px;border-radius:7px;cursor:pointer}
+.sug button:hover,.sug button.active{background:var(--accent-soft)}
+.sug button .cnt{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;flex-shrink:0}
+.sug button mark{background:none;color:var(--accent-text);font-weight:700}
+@media (max-width:640px){.searchrow{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+input[type=text],input[type=number],select{
+  width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--text);font-size:14px;font-family:inherit
+}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+.gradebox{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.gradebox .hint{font-size:12px;color:var(--muted);flex:1;min-width:220px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;font-family:inherit}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text);font-weight:700}
+.summary{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:16px 4px 8px}
+.summary b{font-size:17px}
+.summary .n{color:var(--accent-text)}
+.summary .note{color:var(--muted);font-size:12.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:920px;font-size:13.5px}
+thead th{position:sticky;top:0;background:var(--card);text-align:left;padding:10px 10px;border-bottom:2px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;color:var(--muted);font-size:12.5px}
+thead th .arrow{color:var(--accent-text)}
+tbody td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--accent-soft)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;border-radius:6px;padding:1.5px 7px;font-size:11.5px;font-weight:700}
+.b-교과{color:var(--badge-gyo);background:var(--badge-gyo-bg)}
+.b-종합{color:var(--badge-jong);background:var(--badge-jong-bg)}
+.b-논술{color:var(--badge-non);background:var(--badge-non-bg)}
+.b-확인필요{color:var(--muted);background:var(--bg)}
+.judge{display:inline-block;border-radius:6px;padding:1.5px 8px;font-size:11.5px;font-weight:700}
+.j-안정{color:var(--safe);background:var(--safe-bg)}
+.j-적정{color:var(--fit);background:var(--fit-bg)}
+.j-도전{color:var(--reach);background:var(--reach-bg)}
+.j-어려움{color:var(--muted);background:var(--bg)}
+.delta{font-size:10.5px;font-weight:700;margin-left:4px;font-variant-numeric:tabular-nums}
+.delta.plus{color:var(--safe)}
+.delta.minus{color:var(--reach)}
+.delta.zero{color:var(--muted)}
+.more{display:block;margin:14px auto 0;padding:10px 26px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:14px;cursor:pointer;font-family:inherit}
+.more:hover{border-color:var(--accent)}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+
+/* tabs */
+nav.tabs{display:flex;gap:4px;margin-top:16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+nav.tabs button{border:none;background:none;font-family:inherit;font-size:14px;font-weight:600;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav.tabs button[aria-selected="true"]{color:var(--accent-text);border-bottom-color:var(--accent)}
+nav.tabs button:hover{color:var(--text)}
+
+/* link buttons */
+.linkrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.linkbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--accent-text);background:var(--accent-soft);text-decoration:none;font-weight:600}
+.linkbtn:hover{border-color:var(--accent)}
+.linkrow .none{font-size:12.5px;color:var(--muted)}
+
+/* charts */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+@media (max-width:820px){.charts{grid-template-columns:1fr}}
+figure.chart{margin:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 14px 10px}
+figure.chart figcaption{font-size:13.5px;font-weight:700;margin-bottom:2px}
+figure.chart .sub{font-size:12px;color:var(--muted);margin-bottom:8px}
+figure.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:7px 10px;font-size:12.5px;white-space:nowrap}
+.tip b{font-variant-numeric:tabular-nums}
+
+/* matrix table */
+.mtx td.grp{font-weight:700}
+.mtx .yr{font-size:11px;color:var(--muted)}
+.mtx tbody tr.sel{background:var(--accent-soft)}
+.hint2{font-size:12.5px;color:var(--muted);margin:10px 4px 0}
+
+/* grade converter */
+.gconv{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;align-items:end}
+.gout{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.gout .k{font-size:12px;color:var(--muted);font-weight:600}
+.gout .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+
+/* detail modal */
+dialog{border:none;border-radius:14px;padding:0;max-width:860px;width:calc(100vw - 32px);background:var(--card);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.d-head{display:flex;justify-content:space-between;align-items:start;gap:10px;padding:18px 20px 6px}
+.d-head h2{margin:0;font-size:18px}
+.d-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.d-close{border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:4px}
+.d-body{padding:8px 20px 20px}
+.d-body .tablewrap{border-radius:10px}
+.d-body table{min-width:640px}
+.d-body .charts{grid-template-columns:1fr 1fr}
+@media (max-width:700px){.d-body .charts{grid-template-columns:1fr}}
+footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
+@media (max-width:640px){
+  body{font-size:14px}
+  .filters{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <h1>수시 입결 검색 <span style="font-weight:400;color:var(--muted);font-size:14px">수시입결검색</span></h1>
+    <p>대학어디가 발표자료 기반 · 로그인 없음 · 설치 없음 · 모든 계산은 브라우저 안에서 즉시 처리됩니다</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-search" aria-selected="true" data-tab="search">검색</button>
+    <button role="tab" id="tab-univ" aria-selected="false" data-tab="univ">대학 분석</button>
+    <button role="tab" id="tab-pivot" aria-selected="false" data-tab="pivot">집계·연도비교</button>
+    <button role="tab" id="tab-grade" aria-selected="false" data-tab="grade">등급 변환</button>
+    <button role="tab" id="tab-links" aria-selected="false" data-tab="links">대학 링크</button>
+  </nav>
+
+  <!-- ================= 검색 ================= -->
+  <section id="pane-search" role="tabpanel">
+    <div class="panel" aria-label="검색 필터">
+      <div class="filters">
+        <div class="full searchrow">
+          <label class="f ac">대학 검색
+            <input type="text" id="qUniv" placeholder="예: 고려대" autocomplete="off" role="combobox" aria-expanded="false">
+            <div class="sug" id="sugUniv" hidden></div>
+          </label>
+          <label class="f ac">학과 검색
+            <input type="text" id="qDept" placeholder="예: 간호, 컴퓨터" autocomplete="off" role="combobox" aria-expanded="false">
+            <div class="sug" id="sugDept" hidden></div>
+          </label>
+          <label class="f ac">전형 검색
+            <input type="text" id="qAdm" placeholder="예: 논술, 지역인재" autocomplete="off" role="combobox" aria-expanded="false">
+            <div class="sug" id="sugAdm" hidden></div>
+          </label>
+        </div>
+        <label class="f">학년도
+          <select id="fYear"><option value="">전체</option></select>
+        </label>
+        <label class="f">지역
+          <select id="fRegion"><option value="">전체</option></select>
+        </label>
+        <label class="f">전형 유형
+          <select id="fMethod"><option value="">전체</option></select>
+        </label>
+        <label class="f">계열
+          <select id="fTrack"><option value="">전체</option></select>
+        </label>
+        <label class="f">소계열
+          <select id="fCat"><option value="">전체</option></select>
+        </label>
+      </div>
+      <div class="gradebox">
+        <label class="f" style="max-width:170px">내 내신 등급 (선택)
+          <input type="number" id="myGrade" min="1" max="9" step="0.01" placeholder="예: 2.35">
+        </label>
+        <div class="chips" id="judgeChips" hidden>
+          <button class="chip" data-j="안정" aria-pressed="false">안정</button>
+          <button class="chip" data-j="적정" aria-pressed="false">적정</button>
+          <button class="chip" data-j="도전" aria-pressed="false">도전</button>
+        </div>
+        <p class="hint">등급을 입력하면 70%컷(등급70) 기준 <b>안정·적정·도전·어려움</b> 판정과 컷과의 차이(±)가 표시됩니다. 버튼을 누르면 해당 판정만 남습니다. 입결은 참고용이며 해마다 변동됩니다.</p>
+      </div>
+    </div>
+
+    <div class="summary">
+      <b><span class="n" id="count">0</span>건</b>
+      <span class="note" id="scope"></span>
+      <span class="note">행을 클릭하면 연도별 추이·그래프를 볼 수 있습니다</span>
+    </div>
+
+    <div class="tablewrap">
+      <table id="tbl">
+        <thead><tr id="theadRow"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>조건에 맞는 결과가 없습니다</div>
+    </div>
+    <button class="more" id="moreBtn" hidden>더 보기</button>
+  </section>
+
+  <!-- ================= 대학 분석 ================= -->
+  <section id="pane-univ" role="tabpanel" hidden>
+    <div class="panel">
+      <div class="filters">
+        <label class="f ac" style="max-width:280px">대학
+          <input type="text" id="uPick" placeholder="대학명을 입력하세요 (예: 고려대)" autocomplete="off" role="combobox" aria-expanded="false">
+          <div class="sug" id="sugUPick" hidden></div>
+        </label>
+      </div>
+      <div class="linkrow" id="uLinks"></div>
+      <div class="chips" id="uMetrics" style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">
+        <button class="chip" data-m="g70" aria-pressed="true">70%컷</button>
+        <button class="chip" data-m="g50" aria-pressed="false">50%컷</button>
+        <button class="chip" data-m="seats" aria-pressed="false">모집인원</button>
+        <button class="chip" data-m="comp" aria-pressed="true">경쟁률</button>
+        <button class="chip" data-m="realComp" aria-pressed="false">실경쟁률</button>
+        <button class="chip" data-m="chuhap" aria-pressed="false">추합</button>
+      </div>
+      <p class="hint2"><span id="yearSpan"></span> 매트릭스입니다. 지표 버튼으로 열 묶음을 켜고 끌 수 있고, 행을 클릭하면 그 학과의 연도별 추이 그래프가 열립니다.</p>
+    </div>
+    <div class="summary"><b id="uTitle">대학을 선택하세요</b><span class="note" id="uScope"></span></div>
+    <div class="tablewrap">
+      <table id="uTbl" class="mtx">
+        <thead id="uThead"></thead>
+        <tbody id="uTbody"></tbody>
+      </table>
+      <div class="empty" id="uEmpty">위에서 대학을 선택하면 전형·학과별 4개년 비교표가 나타납니다</div>
+    </div>
+  </section>
+
+  <!-- ================= 집계 ================= -->
+  <section id="pane-pivot" role="tabpanel" hidden>
+    <div class="panel">
+      <div class="filters">
+        <label class="f">1차 기준
+          <select id="pKey1"></select>
+        </label>
+        <label class="f">2차 기준 (선택)
+          <select id="pKey2"><option value="">없음</option></select>
+        </label>
+        <label class="f">지역 한정
+          <select id="pRegion"><option value="">전체</option></select>
+        </label>
+        <label class="f">전형 유형 한정
+          <select id="pMethod"><option value="">전체</option></select>
+        </label>
+        <label class="f">집계 값
+          <select id="pMetric">
+            <option value="g70">등급70% 평균</option>
+            <option value="g50">등급50% 평균</option>
+            <option value="comp">경쟁률 평균</option>
+            <option value="realComp">실경쟁률 평균</option>
+            <option value="v50">변환50% 평균</option>
+            <option value="v70">변환70% 평균</option>
+            <option value="seats">모집인원 합계</option>
+            <option value="chuhap">추합 합계</option>
+          </select>
+        </label>
+      </div>
+      <p class="hint2">선택한 기준으로 묶어 연도별 값을 나란히 보여주고, 가장 최근 두 해의 변화량을 함께 표시합니다.</p>
+    </div>
+    <div class="summary"><b><span class="n" id="pCount">0</span>개 그룹</b><span class="note" id="pNote"></span></div>
+    <div class="tablewrap">
+      <table id="pTbl"><thead id="pThead"></thead><tbody id="pTbody"></tbody></table>
+    </div>
+  </section>
+
+  <!-- ================= 등급 변환 ================= -->
+  <section id="pane-grade" role="tabpanel" hidden>
+    <div class="panel">
+      <div class="gconv">
+        <label class="f">백분위 (0~100)
+          <input type="number" id="cvPct" min="0" max="100" step="0.1" placeholder="예: 96.4">
+        </label>
+        <div class="gout"><div class="k">9등급제 (소수 2자리)</div><div class="v" id="cvG9">–</div></div>
+        <div class="gout"><div class="k">5등급제 (소수 2자리)</div><div class="v" id="cvG5">–</div></div>
+      </div>
+      <div class="gconv" style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)">
+        <label class="f">등급 → 백분위 (9등급제)
+          <input type="number" id="cvGrade" min="1" max="9" step="0.01" placeholder="예: 2.35">
+        </label>
+        <div class="gout"><div class="k">해당 기준 백분위</div><div class="v" id="cvPctOut">–</div></div>
+      </div>
+      <p class="hint2">백분위와 등급을 서로 변환하는 표입니다. 표의 기준 백분위 사이 값은 선형 보간합니다.<br><span id="gNote"></span></p>
+    </div>
+    <div class="summary"><b>변환표</b><span class="note">백분위 100 → 0.1 (0.1 단위)</span></div>
+    <div class="tablewrap" style="max-height:520px;overflow-y:auto">
+      <table id="gTbl">
+        <thead><tr><th class="num">기준 백분위</th><th class="num">9등급 (소수2)</th><th class="num">5등급 (소수2)</th></tr></thead>
+        <tbody id="gTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= 대학 링크 ================= -->
+  <section id="pane-links" role="tabpanel" hidden>
+    <div class="panel">
+      <label class="f" style="max-width:280px">대학 찾기
+        <input type="text" id="lQuery" placeholder="대학명 일부를 입력하세요" autocomplete="off">
+      </label>
+      <p class="hint2">대학별 입학처·입결발표·대학알리미·종합전형가이드북 페이지로 바로 이동합니다.</p>
+    </div>
+    <div class="summary"><b><span class="n" id="lCount">0</span>개 대학</b></div>
+    <div class="tablewrap">
+      <table id="lTbl">
+        <thead><tr><th>대학</th><th>입학처</th><th>입결 발표</th><th>대학알리미</th><th>종합전형 가이드북</th><th>어디가</th></tr></thead>
+        <tbody id="lTbody"></tbody>
+      </table>
+      <div class="empty" id="lEmpty" hidden>검색 결과가 없습니다</div>
+    </div>
+  </section>
+
+  <dialog id="detail">
+    <div class="d-head">
+      <div><h2 id="dTitle"></h2><p id="dSub"></p></div>
+      <button class="d-close" id="dClose" aria-label="닫기">×</button>
+    </div>
+    <div class="d-body">
+      <div class="tablewrap">
+        <table id="dTable">
+          <thead><tr>
+            <th>학년도</th><th>전형</th><th class="num">모집</th><th class="num">경쟁률</th><th class="num">실경쟁률</th>
+            <th class="num">추합</th><th class="num">등급50%</th><th class="num">등급70%</th>
+            <th class="num">변환50%</th><th class="num">변환70%</th><th class="num">환산백분위</th>
+          </tr></thead>
+          <tbody id="dBody"></tbody>
+        </table>
+      </div>
+      <div class="charts" id="dCharts"></div>
+    </div>
+  </dialog>
+
+  <footer>
+    데이터: <span id="srcNote">대학어디가(adiga.kr) 대학 발표자료 정리본 (남악고 김현석, ver 07.03)</span> · <span id="yearNote"></span> 수시 <span id="statTotal"></span><br>
+    등급50%·등급70%는 최종등록자 상위 50%·70% 지점의 학생부 등급입니다. 대학이 발표한 자료의 집계 시점·기준에 따라 실제 요강과 다를 수 있으며, 지원 판단의 참고자료로만 사용하세요.<br>
+    <span id="extraNote">원본의 정시결과 시트는 표 서식만 있고 데이터 행이 비어 있어 이 사이트에는 정시 자료가 포함되지 않습니다.</span>
+    <span id="kitLink"><br><a href="teachers.html">우리 학교 자료로 사이트 만들기 (선생님용)</a></span>
+  </footer>
+</div>
+<div class="tip" id="tip" hidden></div>
+<script id="susi-config">window.SITE_CONFIG=null;</script>
+<script id="susi-data">window.ADIGA_DATA=null;</script>
+<script id="susi-links">window.ADIGA_LINKS={"가야대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002748&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002748&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.kaya.ac.kr/Home/Main.mbz"},"가천대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000063&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000063&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.gachon.ac.kr/admission/html/main/main.asp","대학교 입결발표":"https://ipsi.cku.ac.kr/iphak/5106/subview.do?enc=Zm5jdDF8QEB8JTJGYmJzJTJGaXBoYWslMkYxMDYwJTJGMzY0NTM5JTJGYXJ0Y2xWaWV3LmRvJTNG","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000063"},"가톨릭관동대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000072&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000072&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.cku.ac.kr/sites/iphak/index.do","대학교 입결발표":"https://ipsi.cku.ac.kr/iphak/5106/subview.do?enc=Zm5jdDF8QEB8JTJGYmJzJTJGaXBoYWslMkYxMDYwJTJGMzY0NTM5JTJGYXJ0Y2xWaWV3LmRvJTNG","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000072"},"가톨릭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000046&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000046&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.catholic.ac.kr/main.do","대학교 입결발표":"https://ipsi.catholic.ac.kr/submenu.do?menuurl=vQ5Um0%2fKclp6EAegmwbvhQ%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000046"},"감신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000050&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000050&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.mtu.ac.kr/mtu/contents/view.do?mId=175","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000050"},"강남대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000051&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000051&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.kangnam.ac.kr/main.htm","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000051"},"강서대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000079&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000079&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://entrance.gangseo.ac.kr/kcui/mainService","대학교 입결발표":"https://entrance.gangseo.ac.kr/kcui/boardList?menuCode=MC0301&groupCode=03","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000079"},"강원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000003&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000003&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.kangwon.ac.kr/admission/main.do","대학교 입결발표":"https://admission.kangwon.ac.kr/admission/selectBbsNttList.do?bbsNo=376&key=2418&searchCtgry=%ED%95%99%EB%B6%80%EC%9E%85%EC%8B%9C&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000003"},"건국대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000052&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000052&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.konkuk.ac.kr/main.do","대학교 입결발표":"https://enter.konkuk.ac.kr/submenu.do?menuurl=E5cBQ72SKW7tPdXUykhilA%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000052"},"건국대(글)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000053&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000053&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.kku.ac.kr/intro/","대학교 입결발표":"https://enter.kku.ac.kr/rate/?m_type=SUSI","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000053"},"건양대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000054&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000054&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.konyang.ac.kr/ipsi/index.do","대학교 입결발표":"https://ipsi.konyang.ac.kr/cop/bbs/BBSMSTR_000000000731/selectBoardList.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000054"},"경기대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000056&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000056&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.kyonggi.ac.kr/index.do","대학교 입결발표":"https://enter.kyonggi.ac.kr/cms/FR_CON/index.do?MENU_ID=150","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000056"},"경남대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000059&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000059&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.kyungnam.ac.kr/sites/ipsi/index.do#close","대학교 입결발표":"https://ipsi.kyungnam.ac.kr/ipsi/6839/subview.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000059"},"경동대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000060&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000060&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.kduniv.ac.kr/iphak/Main.do","대학교 입결발표":"https://www.kduniv.ac.kr/iphak/CMS/Board/Board.do?mCode=MN071","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000060"},"경북대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000005&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000005&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi1.knu.ac.kr/main/","대학교 입결발표":"https://ipsi1.knu.ac.kr/data/view.php?r=FxlcTxxJV0BHAHIcEBQAECVnJj5HFHIDFBA-GVQYDFkkaTttJyQ1X0MgABUEUBw","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000005"},"경상국립대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000007&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000007&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.gnu.ac.kr/new/main.do","대학교 입결발표":"https://www.gnu.ac.kr/new/cm/cntnts/cntntsView.do?mi=48029&cntntsId=21841","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000007"},"경성대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000062&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000062&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"http://ipsi.ks.ac.kr/kor/Main.do","대학교 입결발표":"https://kscms.ks.ac.kr/ipsi/CMS/Board/Board.do?mCode=MN027","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000062"},"경운대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000244&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000244&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.ikw.ac.kr/ipsi/main.tc","대학교 입결발표":"https://www.ikw.ac.kr/ipsi/board/detail.tc?mn=2415&viewType=sub&mngNo=12&pageIndex=1&boardName=EARLYDECISIONNOTICE&boardNo=331907&boardCategory=&pageSeq=1608&preview=&previewTempl=&categoryNo=48&searchCondition=1&searchKeyword=&_csrf=","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000244"},"경인교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000256&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000256&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.ginue.ac.kr/ipsi/Main.do","대학교 입결발표":"https://ipsi.ginue.ac.kr/ipsi/CMS/Board/Board.do?mCode=MN024","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000256"},"경일대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000064&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000064&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ibsi.kiu.ac.kr/admission/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000064"},"경희대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000066&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000066&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.khu.ac.kr/mainIntro/introhtml.do","대학교 입결발표":"https://iphak.khu.ac.kr/submenu.do?menuurl=CQ%2btdVujMr8ZrNNooONqJw%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000066","종합전형가이드북":"https://kr.object.gov-ncloudstorage.com/khuiphakstorage/upload/20260429043102836_2027%20%ED%95%99%EC%83%9D%EB%B6%80%EC%A0%84%ED%98%95%20%EA%B0%80%EC%9D%B4%EB%93%9C%EB%B6%81.pdf"},"계명대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000068&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000068&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.gokmu.ac.kr/main.htm#none","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000068"},"고려대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000069&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000069&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://oku.korea.ac.kr/oku/index.do","대학교 입결발표":"https://oku.korea.ac.kr/oku/cms/FR_BBS_CON/BoardView.do?pageNo=1&pagePerCnt=16&MENU_ID=760&CONTENTS_NO=1&SITE_NO=2&BOARD_SEQ=6&BBS_SEQ=113&PWD=&CATE_SEQ=&SEARCH_FLD=&SEARCH=","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000069"},"고려대(세)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000070&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000070&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://oku.korea.ac.kr/sejong/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000070"},"고신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000071&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000071&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://home.kosin.ac.kr/enter/","대학교 입결발표":"https://www.kosin.ac.kr/dream/index.php?pCode=MN7000027","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000071"},"공주교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000251&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000251&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.gjue.ac.kr/html/ipsi/index.html","대학교 입결발표":"https://www.gjue.ac.kr/ipsi/article/ATCL183d10981","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000251"},"광신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000073&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000073&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.kwangshin.ac.kr/ipsi/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000073"},"광운대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000074&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000074&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.kw.ac.kr/main.php","대학교 입결발표":"https://iphak.kw.ac.kr/result/result.php?m_type=SUSI","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000074"},"광주가톨릭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000075&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000075&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000075"},"광주교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000252&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000252&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://entrance.gnue.ac.kr/","대학교 입결발표":"https://www.gjue.ac.kr/ipsi/article/ATCL183d10981","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000252"},"광주대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000231&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000231&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.gwangju.ac.kr/","대학교 입결발표":"https://iphak.gwangju.ac.kr/index?d=early_decision03","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000231"},"광주여대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000076&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000076&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.kwu.ac.kr/index.do","대학교 입결발표":"https://ipsi.kwu.ac.kr/mod/board/list.do?MID=IPSI_B06090101","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000076"},"국립강릉원주대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000001&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000001&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.gwnu.ac.kr/sites/iphak/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000001"},"국립공주대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000008&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000008&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.kongju.ac.kr/kor","대학교 입결발표":"https://ipsi.kongju.ac.kr/kor/pdfWebViewer?atchFileId=35&fileSn=1","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000008"},"국립군산대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000009&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000009&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.kunsan.ac.kr/iphak/index.kunsan","대학교 입결발표":"https://www.kunsan.ac.kr/iphak/board/view.kunsan?boardId=BBS_0000045&menuCd=DOM_000001212003000000&paging=ok&startPage=1&dataSid=1379986","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000009"},"국립금오공대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000010&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000010&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.kumoh.ac.kr/ipsi/index.do?sso=ok","대학교 입결발표":"https://iphak.kumoh.ac.kr/ipsi/sub010203.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000010"},"국립목포대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000011&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000011&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.mokpo.ac.kr/ipsi/index.do","대학교 입결발표":"https://ipsi.mokpo.ac.kr/ipsi/791/subview.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000011"},"국립목포해양대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000012&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000012&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.mmu.ac.kr/admission","대학교 입결발표":"https://www.mmu.ac.kr/admission/contents/2026Result","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000012"},"국립부경대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000013&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000013&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.pknu.ac.kr/pknu/index.htm","대학교 입결발표":"https://iphak.pknu.ac.kr/pknu/board/g_board.htm?code=iphak_data&tn=exam_result&page=1&mode=read&number=101&keyfield=&key=&search_time=&year=&kind=oa","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000013"},"국립순천대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000020&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000020&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.scnu.ac.kr/iphak/main.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000020"},"국립경국대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000021&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000021&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.andong.ac.kr/new/admission/index.htm","대학교 입결발표":"https://ipsi.gknu.ac.kr/admission/sub.htm?mode=view&mv_data=aWR4PTMzODIzJnN0YXJ0UGFnZT0wJmxpc3RObz03MCZ0YWJsZT1jc19iYnNfZGF0YSZuYXZfY29kZT1hbmQxNTM2OTE1NDEwJmNvZGU9aXBzaWRhdGEmc2VhcmNoX2l0ZW09JnNlYXJjaF9vcmRlcj0mb3JkZXJfbGlzdD0mbGlzdF9zY2FsZT0mdmlld19sZXZlbD0mdmlld19jYXRlPeyImOyLnOuqqOynkSZ2aWV3X2NhdGUyPQ==||","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000021"},"국립창원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000028&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000028&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.changwon.ac.kr/ipsi/main.do","대학교 입결발표":"https://www.changwon.ac.kr/ipsi/na/ntt/selectNttList.do?mi=15140&bbsId=5654","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000028"},"국립한국해양대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000033&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000033&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.kmou.ac.kr/ipsi/","대학교 입결발표":"https://www.kmou.ac.kr/ipsi/cm/cntnts/cntntsView.do?mi=3312&cntntsId=2248","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000033"},"국립한밭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000039&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000039&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.hanbat.ac.kr/admission/","대학교 입결발표":"https://www.hanbat.ac.kr/bbs/BBSMSTR_000000000119/list.do?mno=sub01_02&kind=notice1","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000039"},"국민대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000078&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000078&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.kookmin.ac.kr/main.php","대학교 입결발표":"https://cs.u-is.co.kr/kmu/listByScore.htm?ipsiGBCD=%EC%88%98%EC%8B%9C&widthout_score=N&highschool_id=&highschool_sido=&highschool_googun=&highschool_type=&fingerPrint=3393904396&grade=","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000078"},"극동대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000080&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000080&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.kdu.ac.kr/ipsi/main.do","대학교 입결발표":"https://www.kdu.ac.kr/ipsi/sub.do?mncd=1363","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000080"},"금강대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000224&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000224&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.ggu.ac.kr/matriculation","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000224"},"김천대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000241&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000241&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ibhak.gimcheon.ac.kr/","대학교 입결발표":"https://ibhak.gimcheon.ac.kr/site/ibhak/html/sub1/0106.html","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000241"},"가톨릭꽃동네대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000215&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000215&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.kkot.ac.kr/ipsi/main/view","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000215"},"나사렛대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000081&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000081&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://cms.kornu.ac.kr/ipsi/index.do","대학교 입결발표":"https://cms.kornu.ac.kr/ipsi/3127/subview.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000081"},"남부대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000216&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000216&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.nambu.ac.kr/ipsi/index.do","대학교 입결발표":"https://ipsi.nambu.ac.kr/content/view.do?menuCd=ipsi002006","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000216"},"남서울대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000245&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000245&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.namseoul.net/main.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000245"},"단국대(죽전)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000082&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000082&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dankook.ac.kr/jukjeon/main.html","대학교 입결발표":"https://ipsi.dankook.ac.kr/jukjeon/doumi/result_list.html?bbsid=juk_result&ctg_cd=01","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000082"},"단국대(천안)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002726&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002726&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dankook.ac.kr/cheonan/main.html","대학교 입결발표":"https://ipsi.dankook.ac.kr/cheonan/doumi/result_list.html?bbsid=che_result&ctg_cd=01","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0002726"},"대구가톨릭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000088&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000088&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ibsi.cu.ac.kr/kor.do","대학교 입결발표":"https://ibsi.cu.ac.kr/kor/BBSMSTR_000000000001/16219/view.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000088"},"대구교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000253&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000253&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.dnue.ac.kr/ipsi/Main.do","대학교 입결발표":"https://admission.dnue.ac.kr/ipsi/CMS/Board/Board.do?mCode=MN027","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000253"},"대구대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000084&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000084&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.daegu.ac.kr/kor","대학교 입결발표":"https://ipsi.daegu.ac.kr/kor/article/ATCL22/19900?mno=&pageIndex=1&searchCategory=&searchCondition=1&searchKeyword=","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000084"},"대구예술대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000087&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000087&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dgau.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000087"},"대구한의대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000061&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000061&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.dhu.ac.kr/admission/","대학교 입결발표":"https://www.dhu.ac.kr/admission/sub.htm?nav_code=ibs1636520307","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000061"},"대신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000093&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000093&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.daeshin.ac.kr/html/02_admission/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000093"},"대전가톨릭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000094&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000094&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.dcatholic.ac.kr/univ/s2/college.php","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000094"},"대전대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000095&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000095&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dju.ac.kr/enter/html/main/main.asp","대학교 입결발표":"https://ipsi.dju.ac.kr/enter/html/rolling/result.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000095"},"대전신학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000238&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000238&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"http://ipsi.daejeon.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000238"},"대진대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000097&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000097&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.daejin.ac.kr/main.do","대학교 입결발표":"https://admission.daejin.ac.kr/submenu.do?menuurl=%2fmq%2fU0WEhNKXwwuOjFncFg%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000097"},"덕성여대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000099&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000099&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.duksung.ac.kr/main.php","대학교 입결발표":"https://enter.duksung.ac.kr/result/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000099"},"동국대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000100&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000100&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dongguk.edu/admission/html/main/main.asp","대학교 입결발표":"https://ipsi.dongguk.edu/admission/html/counsel/previous.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000100"},"동국대(W)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000101&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000101&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dongguk.ac.kr/main","대학교 입결발표":"https://ipsi.dongguk.ac.kr/article/notice/detail/111236","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000101"},"동덕여대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000102&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000102&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dongduk.ac.kr/ipsi/main/index.do","대학교 입결발표":"https://ipsi.dongduk.ac.kr/ipsi/contents/nontime-result.do?schM=view&page=1&viewCount=10&id=91842&schBdcode=_ipsi_result01&schGroupCode=&etc1=40","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000102"},"동명대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000235&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000235&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.tu.ac.kr/iphak/index.do","대학교 입결발표":"https://www.tu.ac.kr/iphak/sub01_05.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000235"},"동서대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000103&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000103&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dongseo.ac.kr/ipsi/","대학교 입결발표":"https://ipsi.dongseo.ac.kr/ipsi/index.php?pCode=ss_ipsirst","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000103"},"동신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000104&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000104&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dsu.ac.kr/ipsi/?pCode=main","대학교 입결발표":"https://ipsi.dsu.ac.kr/ipsi/index.php?pCode=MN1000142","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000104"},"동아대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000105&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000105&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ent.donga.ac.kr/admission/html/main/intro.asp","대학교 입결발표":"https://ent.donga.ac.kr/admission/html/counsel/noticeView.asp?BOARD_IDX=29537","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000105"},"동양대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000106&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000106&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.dyu.ac.kr/","대학교 입결발표":"https://ipsi.dyu.ac.kr/susi/susi_04/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000106"},"동의대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000107&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000107&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.deu.ac.kr/main.do","대학교 입결발표":"https://ipsi.deu.ac.kr/submenu.do?menuUrl=2Yx5AdyROxyzbsACUoXUCQ%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000107"},"루터대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000108&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000108&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"http://ltu-admission.ac.kr/index_.html","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000108"},"명지대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000109&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000109&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.mju.ac.kr/main/index.php","대학교 입결발표":"https://iphak.mju.ac.kr/pages/?p=11&b=B_1_2&cate=%EC%88%98%EC%8B%9C","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000109"},"명지대2캠":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000111&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000111&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000111"},"목원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000112&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000112&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.mokwon.ac.kr/enter/","대학교 입결발표":"https://enter.mokwon.ac.kr/enter/html/sub01/01041101.html","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000112"},"목포가톨릭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000221&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000221&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.mcu.ac.kr/ipsi/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000221"},"배재대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000113&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000113&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.pcu.ac.kr/enter","대학교 입결발표":"https://enter.pcu.ac.kr/enter/contents/508","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000113"},"백석대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000178&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000178&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.bu.ac.kr/main","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000178"},"부산가톨릭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000114&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000114&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.cup.ac.kr/ipsi/main.do","대학교 입결발표":"https://ipsi.cup.ac.kr/cup/ipsi/front/pdfView083000000000000.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000114"},"부산교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000254&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000254&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.bnue.ac.kr/home/main","대학교 입결발표":"https://enter.bnue.ac.kr/board/helper04","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000254"},"부산대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000014&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000014&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://go.pusan.ac.kr/college_2016/main/main.asp","대학교 입결발표":"https://go.pusan.ac.kr/college_2016/pages/index.asp?p=50&b=B_1_1&bn=49372&m=read","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000014"},"부산외대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000115&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000115&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.bufs.ac.kr/","대학교 입결발표":"https://enter.bufs.ac.kr/bbs/board.php?bo_table=b_result&sca=%EC%88%98%EC%8B%9C","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000115"},"부산장신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000222&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000222&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.bpu.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000222"},"삼육대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000116&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000116&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"http://ipsi.syu.ac.kr/2016_syu/main/main.asp","대학교 입결발표":"https://ipsi.syu.ac.kr/2016_syu/pages/index.asp?p=10&b=B_1_7&cate=%BC%F6%BD%C3","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000116"},"상명대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000117&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000117&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.smu.ac.kr/_seoul/main.html","대학교 입결발표":"https://admission.smu.ac.kr/_seoul/iphak/pdf_view.html?ctg_cd=susi&bbsid=seoul_sungjuk","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000117"},"상명대(천)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002959&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002959&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.smu.ac.kr/_cheonan/main.html","대학교 입결발표":"https://admission.smu.ac.kr/_cheonan/iphak/pdf_view.html?ctg_cd=susi&bbsid=chunan_sungjuk","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000119"},"상지대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000119&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000119&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://go.sangji.ac.kr/go/index.do","대학교 입결발표":"https://go.sangji.ac.kr/go/sub01_06.do;jsessionid=FC8E8339B08EA353A43266C79B4E4180","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000119"},"서강대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000120&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000120&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.sogang.ac.kr/enter/html/main/index.asp#firstPage","대학교 입결발표":"https://admission.sogang.ac.kr/enter/html/counsel/result.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000120"},"서경대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000121&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000121&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://go.skuniv.ac.kr/#main","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000121"},"서울과기대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000036&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000036&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.seoultech.ac.kr/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000036"},"서울교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000255&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000255&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"http://admission.snue.ac.kr/","대학교 입결발표":"https://admission.snue.ac.kr/admission/cm/cntnts/cntntsView.do?mi=3649&cntntsId=3425","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000255"},"서울기독대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000098&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000098&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.scu.ac.kr/main","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000098"},"서울대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000019&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000019&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.snu.ac.kr/index.html","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000019"},"서울시립대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000040&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000040&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.uos.ac.kr/admissionNew/main.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000040"},"서울신학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000125&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000125&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.stu.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000125"},"서울여대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000126&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000126&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.swu.ac.kr/main.php","대학교 입결발표":"https://admission.swu.ac.kr/bbs/board.php?bo_table=notice&wr_id=29263&sca=%EC%88%98%EC%8B%9C","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000126"},"서울장신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000127&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000127&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.sjs.ac.kr/admission/main/index.php","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000127"},"서울한영대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000205&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000205&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.shyu.ac.kr/fro_end/html/main/","대학교 입결발표":"https://ipsi.shyu.ac.kr/fro_end/html/dep_01/1200.php","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000205"},"서원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000128&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000128&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.seowon.ac.kr/iphak/index.do","대학교 입결발표":"https://www.seowon.ac.kr/iphak/1162/subview.do?enc=Zm5jdDF8QEB8JTJGYmJzJTJGaXBoYWslMkY2MDIlMkZhcnRjbExpc3QuZG8lM0Zpc1ZpZXdNaW5lJTNEZmFsc2UlMjZiYnNDbFNlcSUzRDY1MiUyNnNyY2hXcmQlM0QlMjZiYnNPcGVuV3JkU2VxJTNEJTI2c3JjaENvbHVtbiUzRHNqJTI2","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000128"},"선문대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000129&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000129&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ilove.sunmoon.ac.kr/main.do","대학교 입결발표":"https://ilove.sunmoon.ac.kr/submenu.do?menuurl=YQ5d0v6456ZAAIjeRW71OQ%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000129"},"성결대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000131&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000131&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.sungkyul.ac.kr/ipsi/index.do","대학교 입결발표":"https://ipsi.sungkyul.ac.kr/10000008","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000131"},"성공회대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000132&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000132&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.skhu.ac.kr/enter/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000132"},"성균관대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000133&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000133&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.skku.edu/admission/html/main/main.html","대학교 입결발표":"https://admission.skku.edu/admission/html/ipsi/result.html","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000133"},"성신여대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000136&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000136&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.sungshin.ac.kr/main.htm","대학교 입결발표":"https://ipsi.sungshin.ac.kr/guide/dataroom.htm?bbsid=prev_result&ctg_cd=all","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000136"},"세명대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000137&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000137&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.semyung.ac.kr/","대학교 입결발표":"https://ipsi.semyung.ac.kr/cop/bbs/BBSMSTR_000000000353/selectBoardList.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000137"},"세종대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000138&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000138&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.sejong.ac.kr/","대학교 입결발표":"https://ipsi.sejong.ac.kr/sub_page/sub5/0110_list.asp?tab1=5&B_CODE=BOARD_1464103629&B_CATEGORY=0","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000138"},"세한대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000092&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000092&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://apply.sehan.ac.kr/apply/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000092"},"송원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000243&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000243&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.songwon.ac.kr/","대학교 입결발표":"https://iphak.songwon.ac.kr/sb/SE_Board.asp?boardID=data&pgKey=7&queryPTP=2","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000243"},"수원가톨릭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000139&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000139&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.suwoncatholic.ac.kr/page/05_enter/enter_02.php","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000139"},"수원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000140&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000140&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.suwon.ac.kr/","대학교 입결발표":"https://ipsi.suwon.ac.kr/board/susi_result","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000140"},"숙명여대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000141&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000141&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.sookmyung.ac.kr/admission/html/main/main.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000141"},"순천향대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000142&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000142&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.sch.ac.kr/main.do","대학교 입결발표":"https://ipsi.sch.ac.kr/submenu.do?menuurl=8qhwHRoBql1CWRTNlu3rcw%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000142"},"숭실대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000143&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000143&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.ssu.ac.kr/","대학교 입결발표":"https://iphak.ssu.ac.kr/board/statistics_list.asp?page=1&srchoption=&keyword=&flag=1&page_no=1_2_6","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000143"},"신경주대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000065&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000065&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://entrance-sgu.tistory.com/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000065"},"신라대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000144&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000144&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.silla.ac.kr/ipsi/?pCode=main","대학교 입결발표":"https://ipsi.silla.ac.kr/ipsi/index.php?pCode=1779349969","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000144"},"신한대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002712&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002712&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.shinhan.ac.kr/","대학교 입결발표":"https://ipsi.shinhan.ac.kr/adm/info.do?cateId=6&bbsId=BBSMSTR_000000000065&relateImagePath=svis_1","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0002712"},"신한대(2캠)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002959&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002959&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0002800"},"아신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000145&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000145&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.acts.ac.kr/admission/design/index.asp","대학교 입결발표":"https://www.acts.ac.kr/admission/design/admission08.asp?&left=admi4&cry=2026&crs=%BC%F6%BD%C3%C6%F2%B1%D5,%BC%F6%BD%C3%B3%BB%BD%C5&mode=view2","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000145"},"아주대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000146&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000146&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.iajou.ac.kr/main/","대학교 입결발표":"https://www.iajou.ac.kr/rate/?m_type=SUSI","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000146"},"안양대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000147&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000147&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.anyang.ac.kr/main","대학교 입결발표":"https://enter.anyang.ac.kr/10000015","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000147"},"연세대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000149&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000149&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.yonsei.ac.kr/seoul/admission/html/main/main.asp","대학교 입결발표":"https://admission.yonsei.ac.kr/seoul/admission/html/counsel/dataView.asp?BBS_NO=3492&s_code=BBS_SUBJECT&s_data=&s_page=1","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000149"},"연세대(미)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000150&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000150&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.yonsei.ac.kr/mirae/admission/html/main/main.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000150"},"영남대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000151&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000151&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.yu.ac.kr/page/main/index.php","대학교 입결발표":"https://enter.yu.ac.kr/page/board/doumi_data.htm?bbsid=notice&mode=view&bltn_seq=37979","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000151"},"영남신학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000153&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000153&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://entra.ytus.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000153"},"영산대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000236&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000236&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.ysu.ac.kr/ipsi/Main.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000236"},"영산선학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000155&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000155&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://youngsan.ac.kr/bbs/board.php?bo_table=2_3","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000155"},"예수대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000228&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000228&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.jesus.ac.kr/enter/index.php","대학교 입결발표":"https://www.jesus.ac.kr/enter/index.php?menu=191","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000218"},"예원예술대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000218&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000218&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.yewon.ac.kr/main/","대학교 입결발표":"https://admission.yewon.ac.kr/main/?menu=294","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000218"},"용인대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000156&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000156&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.yongin.ac.kr/index.do","대학교 입결발표":"https://ipsi.yongin.ac.kr/susi/prev_result_list.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000156"},"우석대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000157&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000157&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.woosuk.ac.kr/main/","대학교 입결발표":"https://enter.woosuk.ac.kr/main/?menu=52","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000157"},"우송대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000240&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000240&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ent.wsu.ac.kr/main/index.jsp","대학교 입결발표":"https://ent.wsu.ac.kr/board/index.jsp?code=einfo0201","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000240"},"울산대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000158&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000158&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.ulsan.ac.kr/main","대학교 입결발표":"https://iphak.ulsan.ac.kr/main/46","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000158"},"원광대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000159&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000159&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.wku.ac.kr/main.do","대학교 입결발표":"https://ipsi.wku.ac.kr/submenu.do?menuurl=jcgylvDgJz1bdCxN45fl1g%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000159"},"위덕대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000160&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000160&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.uu.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000160"},"유원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000154&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000154&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.u1.ac.kr/ipsi/main.do","대학교 입결발표":"https://ipsi.u1.ac.kr/ipsi/data/result.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000154"},"을지대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000161&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000161&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.eulji.ac.kr/","대학교 입결발표":"https://admission.eulji.ac.kr/?menuno=7353","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000160"},"이화여대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000163&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000163&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.ewha.ac.kr/admission/html/main/intro.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000163"},"인제대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000164&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000164&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.inje.ac.kr/intro.asp","대학교 입결발표":"https://iphak.inje.ac.kr/board/list.asp?m=1&m2=2&part=1","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000164"},"인천가톨릭대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000168&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000168&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.iccu.ac.kr/default.php","대학교 입결발표":"https://admission.iccu.ac.kr/bbs/board.php?bo_table=result","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000168"},"인천대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002660&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0002660&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.inu.ac.kr/main.do","대학교 입결발표":"https://admission.inu.ac.kr/submenu.do?menuurl=2LzZbH%2fR%2bB4HzyuYmPyHoA%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0002660"},"인하대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000169&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000169&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.inha.ac.kr/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000169"},"장로회신학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000170&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000170&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.puts.ac.kr/ipsi/db/db_admission_v1/","대학교 입결발표":"https://www.puts.ac.kr/ipsi/db/db_admission_v1/sub.asp?m1=4&m2=3&m3=1","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000170"},"전남대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000023&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000023&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.jnu.ac.kr/indexMain.aspx","대학교 입결발표":"https://admission.jnu.ac.kr/WebApp/web/HOM/COM/Board/board.aspx?boardID=423","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000023"},"전남대(여)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000024&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000024&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.jnu.ac.kr/indexMain.aspx","대학교 입결발표":"https://admission.jnu.ac.kr/WebApp/web/HOM/COM/Board/board.aspx?boardID=423","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000024"},"전북대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000025&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000025&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.jbnu.ac.kr/main.do","대학교 입결발표":"https://enter.jbnu.ac.kr/submenu.do?menuurl=bmyV1ovIAzYtqDXLjUSVtw%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000025"},"전주교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000258&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000258&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.jnue.kr/portal/enter/main/main.do","대학교 입결발표":"https://www.jnue.kr/portal/enter/bbs/view.do?menuId=M0007000100000000&boardSeq=15640#{}","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000258"},"전주대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000171&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000171&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.jj.ac.kr/iphak/index.do","대학교 입결발표":"https://iphak.jj.ac.kr/iphak/assistant/result.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000171"},"제주대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000027&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000027&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ibsi.jejunu.ac.kr/?m1=home%25","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000027"},"조선대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000172&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000172&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://i.chosun.ac.kr/main","대학교 입결발표":"https://i.chosun.ac.kr/Contents/A000000107","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000172"},"중부대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000173&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000173&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.joongbu.ac.kr/index.es?sid=a6","대학교 입결발표":"https://www.joongbu.ac.kr/menu.es?mid=a60103000000","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000173"},"중앙대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000175&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000175&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.cau.ac.kr/main.do","대학교 입결발표":"https://admission.cau.ac.kr/submenu.do?menuurl=lktmA6TpgpjUpNE2tkO4bw%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000175"},"중앙대2캠":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000174&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000174&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000174"},"중원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000239&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000239&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"http://ipsi.jwu.ac.kr/site/siteView.jwu","대학교 입결발표":"http://ipsi.jwu.ac.kr/site/siteView.jwu?categoryId=D2_3192&depth=2&taskType=0&jobType=0&pageNo=1&bbsId=&bbsCategoryId=0&target=","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000239"},"진주교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000260&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000260&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"http://www.cue.ac.kr/enter/Main.do","대학교 입결발표":"https://www.cue.ac.kr/enter/CMS/Contents/Contents.do?mCode=MN102","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000260"},"차의과학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000187&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000187&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.cha.ac.kr/","대학교 입결발표":"https://admission.cha.ac.kr/%ec%88%98%ec%8b%9c%eb%aa%a8%ec%a7%91/%ec%88%98%ec%8b%9c-%ec%9e%85%ec%8b%9c%ea%b2%b0%ea%b3%bc/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000187"},"창신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000249&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000249&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.cs.ac.kr/main.php","대학교 입결발표":"https://admission.cs.ac.kr/early/result","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000249"},"청운대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000284&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000284&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.chungwoon.ac.kr/enter/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000284"},"청주교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000261&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000261&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.cje.ac.kr/ipsi/","대학교 입결발표":"https://www.cje.ac.kr/ipsi/web/board/brdList.do?menu_cd=000019","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000261"},"청주대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000179&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000179&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.cju.ac.kr/ipsi/index.do","대학교 입결발표":"https://www.cju.ac.kr/ipsi/selectBbsNttList.do?bbsNo=87&key=840&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000261"},"초당대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000246&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000246&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.cdu.ac.kr/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000246"},"총신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000180&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000180&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.csu.ac.kr/","대학교 입결발표":"https://admission.csu.ac.kr/?m1=page&menu_id=2073&category_id=283&category_name=2026%ED%95%99%EB%85%84%EB%8F%84","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000180"},"추계예대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000181&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000181&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.chugye.ac.kr/main.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000181"},"춘천교대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000262&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000262&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.cnue.ac.kr/enter/index.do","대학교 입결발표":"https://enter.cnue.ac.kr/enter/susi/result.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000262"},"충남대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000029&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000029&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.cnu.ac.kr/intro.html","대학교 입결발표":"https://ipsi.cnu.ac.kr/_prog/_board/?mode=V&no=2025630&code=recsroom_01&site_dvs_cd=uadm&menu_dvs_cd=0105&skey=&sval=&site_dvs=&GotoPage=","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000029"},"충북대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000030&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000030&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.chungbuk.ac.kr/","대학교 입결발표":"https://ipsi.chungbuk.ac.kr/kor/bbs/BBSMSTR_000000000011/lst.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000030"},"칼빈대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000184&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000184&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"http://www.calvin.ac.kr/iphak/index.do?brd_mgrno=0&menu_no=1075","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000184"},"평택대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000186&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000186&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://entrance.ptu.ac.kr/entrance/index.do","대학교 입결발표":"https://entrance.ptu.ac.kr/entrance/3676/subview.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000186"},"포항공대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000188&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000188&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://adm-u.postech.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000188"},"한경국립대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000037&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000037&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.hknu.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000037"},"한국공학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000247&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000247&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.tukorea.ac.kr/main.htm","대학교 입결발표":"https://iphak.tukorea.ac.kr/susi/result.htm","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000247"},"한국교원대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000031&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000031&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.knue.ac.kr/ipsi_intro/index.jsp","대학교 입결발표":"https://www.knue.ac.kr/ipsi/selectBbsNttList.do?bbsNo=271&key=1835","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000031"},"국립한국교통대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000034&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000034&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.ut.ac.kr/ipsi/index.do","대학교 입결발표":"https://www.ut.ac.kr/cop/bbs/BBSMSTR_000000000663/selectBoardList.do?kind=%EC%88%98%EC%8B%9C&mno=sub01_03","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000034"},"한국기술교육대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000189&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000189&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.koreatech.ac.kr/main.do","대학교 입결발표":"https://www.koreatech.ac.kr/menu.es?mid=a40102010100","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000189"},"한국성서대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000191&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000191&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.bible.ac.kr/","대학교 입결발표":"https://ipsi.bible.ac.kr/help/result.aspx","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000191"},"한국외대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000192&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000192&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://adms.hufs.ac.kr/index.do","대학교 입결발표":"https://adms.hufs.ac.kr/cms/FrCon/index.do?MENU_ID=980","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000192"},"한국외대(글)":{"입학처홈페이지":"https://adms.hufs.ac.kr/index.do","대학교 입결발표":"https://adms.hufs.ac.kr/cms/FrCon/index.do?MENU_ID=980"},"한국체대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000032&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000032&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.knsu.ac.kr/ipsi/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000032"},"한국침례신학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000182&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000182&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.kbtus.ac.kr/ipsi/Main.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000182"},"한국항공대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000194&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000194&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ibhak.kau.ac.kr/admission/html/main/main.asp","대학교 입결발표":"https://ibhak.kau.ac.kr/admission/html/rolling/result.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000194"},"한남대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000195&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000195&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ibsi.hannam.ac.kr/adms5/main/index.asp","대학교 입결발표":"https://ibsi.hannam.ac.kr/adms5/occasional/1_3.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000195"},"한동대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000196&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000196&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admissions.handong.edu/","대학교 입결발표":"https://admissions.handong.edu/inform/year/2026/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000196"},"한라대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000197&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000197&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.halla.ac.kr/main/main.php","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000197"},"한림대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000198&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000198&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.hallym.ac.kr/sites/admission/index.do","대학교 입결발표":"https://www.hallym.ac.kr/admission/6072/subview.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000198"},"한서대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000199&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000199&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://helper.hanseo.ac.kr/html/kr/","대학교 입결발표":"https://helper.hanseo.ac.kr/_prog/_board/?code=compete01&site_dvs_cd=kr&menu_dvs_cd=0105","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000199"},"한성대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000200&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000200&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.hansung.ac.kr/?m1=home","대학교 입결발표":"https://enter.hansung.ac.kr/?m1=menu08%25&m2=sub02%25&board=entrance_data%2Fresult%25","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000200"},"한세대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000201&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000201&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.hansei.ac.kr/sites/ipsi/index.do","대학교 입결발표":"https://ipsi.hansei.ac.kr/ipsi/1072/subview.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000201"},"한신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000202&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000202&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ent.hs.ac.kr/ipsi/main/main.asp","대학교 입결발표":"https://cs.u-is.co.kr/hs/intro.htm","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000202"},"한양대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000203&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000203&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://go.hanyang.ac.kr/gate.do","대학교 입결발표":"https://goerica.hanyang.ac.kr/admission/html/regular/counsel_result.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000203"},"한양대(에)":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000204&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000204&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://goerica.hanyang.ac.kr/admission/html/main/main.asp","대학교 입결발표":"https://goerica.hanyang.ac.kr/admission/html/rolling/counsel_result.asp","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000204"},"한일장신대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000206&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000206&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.hanil.ac.kr/portal/ipsi/main/main.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000206"},"협성대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000207&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000207&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://iphak.uhs.ac.kr/main.do","대학교 입결발표":"https://cs.u-is.co.kr/uhs/intro.htm","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000207"},"호남대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000208&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000208&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://enter.honam.ac.kr/","대학교 입결발표":"https://enter.honam.ac.kr/ipsiLastYear","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000208"},"호남신학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000209&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000209&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.htus.ac.kr/","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000209"},"호서대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000211&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000211&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://ipsi.hoseo.ac.kr/main.do","대학교 입결발표":"https://ipsi.hoseo.ac.kr/submenu.do?menuurl=nzHFJ5hTM2ojX8u0TzwHvA%3d%3d&","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000211"},"호원대":{"입학처홈페이지":"https://www.howon.ac.kr/web/_admission/","대학교 입결발표":"https://www.howon.ac.kr/web/_admission/?sm=preyear","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000282"},"홍익대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000212&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000212&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://admission.hongik.ac.kr/main","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000212"},"화성의과학대":{"2027":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000233&searchSyr=2027&tsrdCmphSlcnArtclUpCd=10","2026":"https://www.adiga.kr/uct/acd/ade/criteriaAndResultPopup.do?unvCd=0000233&searchSyr=2026&tsrdCmphSlcnArtclUpCd=10","입학처홈페이지":"https://www.hsmu.ac.kr/admission/main/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000233"},"UNIST":{"입학처홈페이지":"https://adm-u.unist.ac.kr/admission/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000250"},"KENTECH":{"입학처홈페이지":"https://admission.kentech.ac.kr/ipsi","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0003139"},"한국전통문화대학교":{"입학처홈페이지":"https://www.knuh.ac.kr/admission/main.do","대학교 입결발표":"https://www.knuh.ac.kr/admission/brd/list.do?mnuBaseId=MNU0001249&topBaseId=MNU0000209&tplSer=192","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0003022"},"KAIST":{"입학처홈페이지":"https://admission.kaist.ac.kr/undergraduate","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000374"},"GIST":{"입학처홈페이지":"https://www.gist.ac.kr/uadm/main.html#op_layout","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000381"},"DGIST":{"입학처홈페이지":"https://www.dgist.ac.kr/adm/index.do","대학알리미":"https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000382"}};</script>
+<script id="susi-grade">window.ADIGA_GRADE=[[100.0,1.0,1.0],[99.9,1.0244,1.01],[99.8,1.0488,1.02],[99.7,1.0732,1.03],[99.6,1.0976,1.04],[99.5,1.122,1.05],[99.4,1.1464,1.059],[99.3,1.1708,1.069],[99.2,1.1952,1.079],[99.1,1.2196,1.089],[99.0,1.244,1.099],[98.9,1.2684,1.109],[98.8,1.2928,1.119],[98.7,1.3172,1.129],[98.6,1.3416,1.139],[98.5,1.366,1.149],[98.4,1.3904,1.158],[98.3,1.4148,1.168],[98.2,1.4392,1.178],[98.1,1.4636,1.188],[98.0,1.488,1.198],[97.9,1.5124,1.208],[97.8,1.5368,1.218],[97.7,1.5612,1.228],[97.6,1.5856,1.238],[97.5,1.61,1.248],[97.4,1.6344,1.257],[97.3,1.6588,1.267],[97.2,1.6832,1.277],[97.1,1.7076,1.287],[97.0,1.732,1.297],[96.9,1.7564,1.307],[96.8,1.7808,1.317],[96.7,1.8052,1.327],[96.6,1.8296,1.337],[96.5,1.854,1.347],[96.4,1.8784,1.356],[96.3,1.9028,1.366],[96.2,1.9272,1.376],[96.1,1.9516,1.386],[96.0,1.976,1.396],[95.9,2.0004,1.406],[95.8,2.0147,1.416],[95.7,2.029,1.426],[95.6,2.0433,1.436],[95.5,2.0576,1.446],[95.4,2.0719,1.455],[95.3,2.0862,1.465],[95.2,2.1005,1.475],[95.1,2.1148,1.485],[95.0,2.1291,1.495],[94.9,2.1434,1.505],[94.8,2.1577,1.515],[94.7,2.172,1.525],[94.6,2.1863,1.535],[94.5,2.2006,1.545],[94.4,2.2149,1.554],[94.3,2.2292,1.564],[94.2,2.2435,1.574],[94.1,2.2578,1.584],[94.0,2.2721,1.594],[93.9,2.2864,1.604],[93.8,2.3007,1.614],[93.7,2.315,1.624],[93.6,2.3293,1.634],[93.5,2.3436,1.644],[93.4,2.3579,1.653],[93.3,2.3722,1.663],[93.2,2.3865,1.673],[93.1,2.4008,1.683],[93.0,2.4151,1.693],[92.9,2.4294,1.703],[92.8,2.4437,1.713],[92.7,2.458,1.723],[92.6,2.4723,1.733],[92.5,2.4866,1.743],[92.4,2.5009,1.752],[92.3,2.5152,1.762],[92.2,2.5295,1.772],[92.1,2.5438,1.782],[92.0,2.5581,1.792],[91.9,2.5724,1.802],[91.8,2.5867,1.812],[91.7,2.601,1.822],[91.6,2.6153,1.832],[91.5,2.6296,1.842],[91.4,2.6439,1.851],[91.3,2.6582,1.861],[91.2,2.6725,1.871],[91.1,2.6868,1.881],[91.0,2.7011,1.891],[90.9,2.7154,1.901],[90.8,2.7297,1.911],[90.7,2.744,1.921],[90.6,2.7583,1.931],[90.5,2.7726,1.941],[90.4,2.7869,1.95],[90.3,2.8012,1.96],[90.2,2.8155,1.97],[90.1,2.8298,1.98],[90.0,2.8441,1.99],[89.9,2.8584,2.0],[89.8,2.8727,91.9],[89.7,2.887,181.8],[89.6,2.9013,271.7],[89.5,2.9156,361.6],[89.4,2.9299,451.5],[89.3,2.9442,541.4],[89.2,2.9585,631.3],[89.1,2.9728,721.2],[89.0,2.9871,811.1],[88.9,3.0014,901.0],[88.8,3.0097,990.9],[88.7,3.0181,1080.8],[88.6,3.0264,1170.7],[88.5,3.0347,1260.6],[88.4,3.0431,1350.5],[88.3,3.0514,1440.4],[88.2,3.0597,1530.3],[88.1,3.068,1620.2],[88.0,3.0764,1710.1],[87.9,3.0847,1800.0],[87.8,3.093,1889.9],[87.7,3.1014,1979.8],[87.6,3.1097,2069.7],[87.5,3.118,2159.6],[87.4,3.1263,2249.5],[87.3,3.1347,2339.4],[87.2,3.143,2429.3],[87.1,3.1513,2519.2],[87.0,3.1597,2609.1],[86.9,3.168,2699.0],[86.8,3.1763,2788.9],[86.7,3.1847,2878.8],[86.6,3.193,2968.7],[86.5,3.2013,3058.6],[86.4,3.2096,3148.5],[86.3,3.218,3238.4],[86.2,3.2263,3328.3],[86.1,3.2346,3418.2],[86.0,3.243,3508.1],[85.9,3.2513,3598.0],[85.8,3.2596,3687.9],[85.7,3.268,3777.8],[85.6,3.2763,3867.7],[85.5,3.2846,3957.6],[85.4,3.2929,4047.5],[85.3,3.3013,4137.4],[85.2,3.3096,4227.3],[85.1,3.3179,4317.2],[85.0,3.3263,4407.1],[84.9,3.3346,4497.0],[84.8,3.3429,4586.9],[84.7,3.3513,4676.8],[84.6,3.3596,4766.7],[84.5,3.3679,4856.6],[84.4,3.3763,4946.5],[84.3,3.3846,5036.4],[84.2,3.3929,5126.3],[84.1,3.4012,5216.2],[84.0,3.4096,5306.1],[83.9,3.4179,5396.0],[83.8,3.4262,5485.9],[83.7,3.4346,5575.8],[83.6,3.4429,5665.7],[83.5,3.4512,5755.6],[83.4,3.4595,5845.5],[83.3,3.4679,5935.4],[83.2,3.4762,6025.3],[83.1,3.4845,6115.2],[83.0,3.4929,6205.1],[82.9,3.5012,6295.0],[82.8,3.5095,6384.9],[82.7,3.5179,6474.8],[82.6,3.5262,6564.7],[82.5,3.5345,6654.6],[82.4,3.5428,6744.5],[82.3,3.5512,6834.4],[82.2,3.5595,6924.3],[82.1,3.5678,7014.2],[82.0,3.5762,7104.1],[81.9,3.5845,7194.0],[81.8,3.5928,7283.9],[81.7,3.6012,7373.8],[81.6,3.6095,7463.7],[81.5,3.6178,7553.6],[81.4,3.6261,7643.5],[81.3,3.6345,7733.4],[81.2,3.6428,7823.3],[81.1,3.6511,7913.2],[81.0,3.6595,8003.1],[80.9,3.6678,8093.0],[80.8,3.6761,8182.9],[80.7,3.6845,8272.8],[80.6,3.6928,8362.7],[80.5,3.7011,8452.6],[80.4,3.7094,8542.5],[80.3,3.7178,8632.4],[80.2,3.7261,8722.3],[80.1,3.7344,8812.2],[80.0,3.7428,8902.1],[79.9,3.7511,8992.0],[79.8,3.7594,9081.9],[79.7,3.7678,9171.8],[79.6,3.7761,9261.7],[79.5,3.7844,9351.6],[79.4,3.7927,9441.5],[79.3,3.8011,9531.4],[79.2,3.8094,9621.3],[79.1,3.8177,9711.2],[79.0,3.8261,9801.1],[78.9,3.8344,9891.0],[78.8,3.8427,9980.9],[78.7,3.8511,10070.8],[78.6,3.8594,10160.7],[78.5,3.8677,10250.6],[78.4,3.876,10340.5],[78.3,3.8844,10430.4],[78.2,3.8927,10520.3],[78.1,3.901,10610.2],[78.0,3.9094,10700.1],[77.9,3.9177,10790.0],[77.8,3.926,10879.9],[77.7,3.9344,10969.8],[77.6,3.9427,11059.7],[77.5,3.951,11149.6],[77.4,3.9593,11239.5],[77.3,3.9677,11329.4],[77.2,3.976,11419.3],[77.1,3.9843,11509.2],[77.0,3.9927,11599.1],[76.9,4.001,11689.0],[76.8,4.0069,11778.9],[76.7,4.0128,11868.8],[76.6,4.0186,11958.7],[76.5,4.0245,12048.6],[76.4,4.0304,12138.5],[76.3,4.0363,12228.4],[76.2,4.0422,12318.3],[76.1,4.048,12408.2],[76.0,4.0539,12498.1],[75.9,4.0598,12588.0],[75.8,4.0657,12677.9],[75.7,4.0716,12767.8],[75.6,4.0775,12857.7],[75.5,4.0833,12947.6],[75.4,4.0892,13037.5],[75.3,4.0951,13127.4],[75.2,4.101,13217.3],[75.1,4.1069,13307.2],[75.0,4.1127,13397.1],[74.9,4.1186,13487.0],[74.8,4.1245,13576.9],[74.7,4.1304,13666.8],[74.6,4.1363,13756.7],[74.5,4.1421,13846.6],[74.4,4.148,13936.5],[74.3,4.1539,14026.4],[74.2,4.1598,14116.3],[74.1,4.1657,14206.2],[74.0,4.1715,14296.1],[73.9,4.1774,14386.0],[73.8,4.1833,14475.9],[73.7,4.1892,14565.8],[73.6,4.1951,14655.7],[73.5,4.201,14745.6],[73.4,4.2068,14835.5],[73.3,4.2127,14925.4],[73.2,4.2186,15015.3],[73.1,4.2245,15105.2],[73.0,4.2304,15195.1],[72.9,4.2362,15285.0],[72.8,4.2421,15374.9],[72.7,4.248,15464.8],[72.6,4.2539,15554.7],[72.5,4.2598,15644.6],[72.4,4.2656,15734.5],[72.3,4.2715,15824.4],[72.2,4.2774,15914.3],[72.1,4.2833,16004.2],[72.0,4.2892,16094.1],[71.9,4.295,16184.0],[71.8,4.3009,16273.9],[71.7,4.3068,16363.8],[71.6,4.3127,16453.7],[71.5,4.3186,16543.6],[71.4,4.3245,16633.5],[71.3,4.3303,16723.4],[71.2,4.3362,16813.3],[71.1,4.3421,16903.2],[71.0,4.348,16993.1],[70.9,4.3539,17083.0],[70.8,4.3597,17172.9],[70.7,4.3656,17262.8],[70.6,4.3715,17352.7],[70.5,4.3774,17442.6],[70.4,4.3833,17532.5],[70.3,4.3891,17622.4],[70.2,4.395,17712.3],[70.1,4.4009,17802.2],[70.0,4.4068,17892.1],[69.9,4.4127,17982.0],[69.8,4.4186,18071.9],[69.7,4.4244,18161.8],[69.6,4.4303,18251.7],[69.5,4.4362,18341.6],[69.4,4.4421,18431.5],[69.3,4.448,18521.4],[69.2,4.4538,18611.3],[69.1,4.4597,18701.2],[69.0,4.4656,18791.1],[68.9,4.4715,18881.0],[68.8,4.4774,18970.9],[68.7,4.4832,19060.8],[68.6,4.4891,19150.7],[68.5,4.495,19240.6],[68.4,4.5009,19330.5],[68.3,4.5068,19420.4],[68.2,4.5126,19510.3],[68.1,4.5185,19600.2],[68.0,4.5244,19690.1],[67.9,4.5303,19780.0],[67.8,4.5362,19869.9],[67.7,4.5421,19959.8],[67.6,4.5479,20049.7],[67.5,4.5538,20139.6],[67.4,4.5597,20229.5],[67.3,4.5656,20319.4],[67.2,4.5715,20409.3],[67.1,4.5773,20499.2],[67.0,4.5832,20589.1],[66.9,4.5891,20679.0],[66.8,4.595,20768.9],[66.7,4.6009,20858.8],[66.6,4.6067,20948.7],[66.5,4.6126,21038.6],[66.4,4.6185,21128.5],[66.3,4.6244,21218.4],[66.2,4.6303,21308.3],[66.1,4.6361,21398.2],[66.0,4.642,21488.1],[65.9,4.6479,3.0],[65.8,4.6538,68.9],[65.7,4.6597,134.8],[65.6,4.6656,200.7],[65.5,4.6714,266.6],[65.4,4.6773,332.5],[65.3,4.6832,398.4],[65.2,4.6891,464.3],[65.1,4.695,530.2],[65.0,4.7008,596.1],[64.9,4.7067,662.0],[64.8,4.7126,727.9],[64.7,4.7185,793.8],[64.6,4.7244,859.7],[64.5,4.7302,925.6],[64.4,4.7361,991.5],[64.3,4.742,1057.4],[64.2,4.7479,1123.3],[64.1,4.7538,1189.2],[64.0,4.7596,1255.1],[63.9,4.7655,1321.0],[63.8,4.7714,1386.9],[63.7,4.7773,1452.8],[63.6,4.7832,1518.7],[63.5,4.7891,1584.6],[63.4,4.7949,1650.5],[63.3,4.8008,1716.4],[63.2,4.8067,1782.3],[63.1,4.8126,1848.2],[63.0,4.8185,1914.1],[62.9,4.8243,1980.0],[62.8,4.8302,2045.9],[62.7,4.8361,2111.8],[62.6,4.842,2177.7],[62.5,4.8479,2243.6],[62.4,4.8537,2309.5],[62.3,4.8596,2375.4],[62.2,4.8655,2441.3],[62.1,4.8714,2507.2],[62.0,4.8773,2573.1],[61.9,4.8831,2639.0],[61.8,4.889,2704.9],[61.7,4.8949,2770.8],[61.6,4.9008,2836.7],[61.5,4.9067,2902.6],[61.4,4.9126,2968.5],[61.3,4.9184,3034.4],[61.2,4.9243,3100.3],[61.1,4.9302,3166.2],[61.0,4.9361,3232.1],[60.9,4.942,3298.0],[60.8,4.9478,3363.9],[60.7,4.9537,3429.8],[60.6,4.9596,3495.7],[60.5,4.9655,3561.6],[60.4,4.9714,3627.5],[60.3,4.9772,3693.4],[60.2,4.9831,3759.3],[60.1,4.989,3825.2],[60.0,4.9949,3891.1],[59.9,4.9999,3957.0],[59.8,5.0049,4022.9],[59.7,5.0099,4088.8],[59.6,5.0149,4154.7],[59.5,5.0199,4220.6],[59.4,5.0249,4286.5],[59.3,5.0299,4352.4],[59.2,5.0349,4418.3],[59.1,5.0399,4484.2],[59.0,5.0449,4550.1],[58.9,5.0499,4616.0],[58.8,5.0549,4681.9],[58.7,5.0599,4747.8],[58.6,5.0649,4813.7],[58.5,5.0699,4879.6],[58.4,5.0749,4945.5],[58.3,5.0799,5011.4],[58.2,5.0849,5077.3],[58.1,5.0899,5143.2],[58.0,5.0949,5209.1],[57.9,5.0999,5275.0],[57.8,5.1049,5340.9],[57.7,5.1099,5406.8],[57.6,5.1149,5472.7],[57.5,5.1199,5538.6],[57.4,5.1249,5604.5],[57.3,5.1299,5670.4],[57.2,5.1349,5736.3],[57.1,5.1399,5802.2],[57.0,5.1449,5868.1],[56.9,5.1499,5934.0],[56.8,5.1549,5999.9],[56.7,5.1599,6065.8],[56.6,5.1649,6131.7],[56.5,5.1699,6197.6],[56.4,5.1749,6263.5],[56.3,5.1799,6329.4],[56.2,5.1849,6395.3],[56.1,5.1899,6461.2],[56.0,5.1949,6527.1],[55.9,5.1999,6593.0],[55.8,5.2049,6658.9],[55.7,5.2099,6724.8],[55.6,5.2149,6790.7],[55.5,5.2199,6856.6],[55.4,5.2249,6922.5],[55.3,5.2299,6988.4],[55.2,5.2349,7054.3],[55.1,5.2399,7120.2],[55.0,5.2449,7186.1],[54.9,5.2499,7252.0],[54.8,5.2549,7317.9],[54.7,5.2599,7383.8],[54.6,5.2649,7449.7],[54.5,5.2699,7515.6],[54.4,5.2749,7581.5],[54.3,5.2799,7647.4],[54.2,5.2849,7713.3],[54.1,5.2899,7779.2],[54.0,5.2949,7845.1],[53.9,5.2999,7911.0],[53.8,5.3049,7976.9],[53.7,5.3099,8042.8],[53.6,5.3149,8108.7],[53.5,5.3199,8174.6],[53.4,5.3249,8240.5],[53.3,5.3299,8306.4],[53.2,5.3349,8372.3],[53.1,5.3399,8438.2],[53.0,5.3449,8504.1],[52.9,5.3499,8570.0],[52.8,5.3549,8635.9],[52.7,5.3599,8701.8],[52.6,5.3649,8767.7],[52.5,5.3699,8833.6],[52.4,5.3749,8899.5],[52.3,5.3799,8965.4],[52.2,5.3849,9031.3],[52.1,5.3899,9097.2],[52.0,5.3949,9163.1],[51.9,5.3999,9229.0],[51.8,5.4049,9294.9],[51.7,5.4099,9360.8],[51.6,5.4149,9426.7],[51.5,5.4199,9492.6],[51.4,5.4249,9558.5],[51.3,5.4299,9624.4],[51.2,5.4349,9690.3],[51.1,5.4399,9756.2],[51.0,5.4449,9822.1],[50.9,5.4499,9888.0],[50.8,5.4549,9953.9],[50.7,5.4599,10019.8],[50.6,5.4649,10085.7],[50.5,5.4699,10151.6],[50.4,5.4749,10217.5],[50.3,5.4799,10283.4],[50.2,5.4849,10349.3],[50.1,5.4899,10415.2],[50.0,5.4949,10481.1],[49.9,5.4999,10547.0],[49.8,5.5049,10612.9],[49.7,5.5099,10678.8],[49.6,5.5149,10744.7],[49.5,5.5199,10810.6],[49.4,5.5249,10876.5],[49.3,5.5299,10942.4],[49.2,5.5349,11008.3],[49.1,5.5399,11074.2],[49.0,5.5449,11140.1],[48.9,5.5499,11206.0],[48.8,5.5549,11271.9],[48.7,5.5599,11337.8],[48.6,5.5649,11403.7],[48.5,5.5699,11469.6],[48.4,5.5749,11535.5],[48.3,5.5799,11601.4],[48.2,5.5849,11667.3],[48.1,5.5899,11733.2],[48.0,5.5949,11799.1],[47.9,5.5999,11865.0],[47.8,5.6049,11930.9],[47.7,5.6099,11996.8],[47.6,5.6149,12062.7],[47.5,5.6199,12128.6],[47.4,5.6249,12194.5],[47.3,5.6299,12260.4],[47.2,5.6349,12326.3],[47.1,5.6399,12392.2],[47.0,5.6449,12458.1],[46.9,5.6499,12524.0],[46.8,5.6549,12589.9],[46.7,5.6599,12655.8],[46.6,5.6649,12721.7],[46.5,5.6699,12787.6],[46.4,5.6749,12853.5],[46.3,5.6799,12919.4],[46.2,5.6849,12985.3],[46.1,5.6899,13051.2],[46.0,5.6949,13117.1],[45.9,5.6999,13183.0],[45.8,5.7049,13248.9],[45.7,5.7099,13314.8],[45.6,5.7149,13380.7],[45.5,5.7199,13446.6],[45.4,5.7249,13512.5],[45.3,5.7299,13578.4],[45.2,5.7349,13644.3],[45.1,5.7399,13710.2],[45.0,5.7449,13776.1],[44.9,5.7499,13842.0],[44.8,5.7549,13907.9],[44.7,5.7599,13973.8],[44.6,5.7649,14039.7],[44.5,5.7699,14105.6],[44.4,5.7749,14171.5],[44.3,5.7799,14237.4],[44.2,5.7849,14303.3],[44.1,5.7899,14369.2],[44.0,5.7949,14435.1],[43.9,5.7999,14501.0],[43.8,5.8049,14566.9],[43.7,5.8099,14632.8],[43.6,5.8149,14698.7],[43.5,5.8199,14764.6],[43.4,5.8249,14830.5],[43.3,5.8299,14896.4],[43.2,5.8349,14962.3],[43.1,5.8399,15028.2],[43.0,5.8449,15094.1],[42.9,5.8499,15160.0],[42.8,5.8549,15225.9],[42.7,5.8599,15291.8],[42.6,5.8649,15357.7],[42.5,5.8699,15423.6],[42.4,5.8749,15489.5],[42.3,5.8799,15555.4],[42.2,5.8849,15621.3],[42.1,5.8899,15687.2],[42.0,5.8949,15753.1],[41.9,5.8999,15819.0],[41.8,5.9049,15884.9],[41.7,5.9099,15950.8],[41.6,5.9149,16016.7],[41.5,5.9199,16082.6],[41.4,5.9249,16148.5],[41.3,5.9299,16214.4],[41.2,5.9349,16280.3],[41.1,5.9399,16346.2],[41.0,5.9449,16412.1],[40.9,5.9499,16478.0],[40.8,5.9549,16543.9],[40.7,5.9599,16609.8],[40.6,5.9649,16675.7],[40.5,5.9699,16741.6],[40.4,5.9749,16807.5],[40.3,5.9799,16873.4],[40.2,5.9849,16939.3],[40.1,5.9899,17005.2],[40.0,5.9949,17071.1],[39.9,5.9999,17137.0],[39.8,6.0058,17202.9],[39.7,6.0117,17268.8],[39.6,6.0175,17334.7],[39.5,6.0234,17400.6],[39.4,6.0293,17466.5],[39.3,6.0352,17532.4],[39.2,6.0411,17598.3],[39.1,6.047,17664.2],[39.0,6.0528,17730.1],[38.9,6.0587,17796.0],[38.8,6.0646,17861.9],[38.7,6.0705,17927.8],[38.6,6.0764,17993.7],[38.5,6.0823,18059.6],[38.4,6.0881,18125.5],[38.3,6.094,18191.4],[38.2,6.0999,18257.3],[38.1,6.1058,18323.2],[38.0,6.1117,18389.1],[37.9,6.1176,18455.0],[37.8,6.1235,18520.9],[37.7,6.1293,18586.8],[37.6,6.1352,18652.7],[37.5,6.1411,18718.6],[37.4,6.147,18784.5],[37.3,6.1529,18850.4],[37.2,6.1588,18916.3],[37.1,6.1646,18982.2],[37.0,6.1705,19048.1],[36.9,6.1764,19114.0],[36.8,6.1823,19179.9],[36.7,6.1882,19245.8],[36.6,6.1941,19311.7],[36.5,6.1999,19377.6],[36.4,6.2058,19443.5],[36.3,6.2117,19509.4],[36.2,6.2176,19575.3],[36.1,6.2235,19641.2],[36.0,6.2294,19707.1],[35.9,6.2352,19773.0],[35.8,6.2411,19838.9],[35.7,6.247,19904.8],[35.6,6.2529,19970.7],[35.5,6.2588,20036.6],[35.4,6.2647,20102.5],[35.3,6.2706,20168.4],[35.2,6.2764,20234.3],[35.1,6.2823,20300.2],[35.0,6.2882,20366.1],[34.9,6.2941,20432.0],[34.8,6.3,20497.9],[34.7,6.3059,20563.8],[34.6,6.3117,20629.7],[34.5,6.3176,20695.6],[34.4,6.3235,20761.5],[34.3,6.3294,20827.4],[34.2,6.3353,20893.3],[34.1,6.3412,20959.2],[34.0,6.347,21025.1],[33.9,6.3529,4.0],[33.8,6.3588,37.9],[33.7,6.3647,71.8],[33.6,6.3706,105.7],[33.5,6.3765,139.6],[33.4,6.3823,173.5],[33.3,6.3882,207.4],[33.2,6.3941,241.3],[33.1,6.4,275.2],[33.0,6.4059,309.1],[32.9,6.4118,343.0],[32.8,6.4177,376.9],[32.7,6.4235,410.8],[32.6,6.4294,444.7],[32.5,6.4353,478.6],[32.4,6.4412,512.5],[32.3,6.4471,546.4],[32.2,6.453,580.3],[32.1,6.4588,614.2],[32.0,6.4647,648.1],[31.9,6.4706,682.0],[31.8,6.4765,715.9],[31.7,6.4824,749.8],[31.6,6.4883,783.7],[31.5,6.4941,817.6],[31.4,6.5,851.5],[31.3,6.5059,885.4],[31.2,6.5118,919.3],[31.1,6.5177,953.2],[31.0,6.5236,987.1],[30.9,6.5294,1021.0],[30.8,6.5353,1054.9],[30.7,6.5412,1088.8],[30.6,6.5471,1122.7],[30.5,6.553,1156.6],[30.4,6.5589,1190.5],[30.3,6.5648,1224.4],[30.2,6.5706,1258.3],[30.1,6.5765,1292.2],[30.0,6.5824,1326.1],[29.9,6.5883,1360.0],[29.8,6.5942,1393.9],[29.7,6.6001,1427.8],[29.6,6.6059,1461.7],[29.5,6.6118,1495.6],[29.4,6.6177,1529.5],[29.3,6.6236,1563.4],[29.2,6.6295,1597.3],[29.1,6.6354,1631.2],[29.0,6.6412,1665.1],[28.9,6.6471,1699.0],[28.8,6.653,1732.9],[28.7,6.6589,1766.8],[28.6,6.6648,1800.7],[28.5,6.6707,1834.6],[28.4,6.6765,1868.5],[28.3,6.6824,1902.4],[28.2,6.6883,1936.3],[28.1,6.6942,1970.2],[28.0,6.7001,2004.1],[27.9,6.706,2038.0],[27.8,6.7119,2071.9],[27.7,6.7177,2105.8],[27.6,6.7236,2139.7],[27.5,6.7295,2173.6],[27.4,6.7354,2207.5],[27.3,6.7413,2241.4],[27.2,6.7472,2275.3],[27.1,6.753,2309.2],[27.0,6.7589,2343.1],[26.9,6.7648,2377.0],[26.8,6.7707,2410.9],[26.7,6.7766,2444.8],[26.6,6.7825,2478.7],[26.5,6.7883,2512.6],[26.4,6.7942,2546.5],[26.3,6.8001,2580.4],[26.2,6.806,2614.3],[26.1,6.8119,2648.2],[26.0,6.8178,2682.1],[25.9,6.8236,2716.0],[25.8,6.8295,2749.9],[25.7,6.8354,2783.8],[25.6,6.8413,2817.7],[25.5,6.8472,2851.6],[25.4,6.8531,2885.5],[25.3,6.859,2919.4],[25.2,6.8648,2953.3],[25.1,6.8707,2987.2],[25.0,6.8766,3021.1],[24.9,6.8825,3055.0],[24.8,6.8884,3088.9],[24.7,6.8943,3122.8],[24.6,6.9001,3156.7],[24.5,6.906,3190.6],[24.4,6.9119,3224.5],[24.3,6.9178,3258.4],[24.2,6.9237,3292.3],[24.1,6.9296,3326.2],[24.0,6.9354,3360.1],[23.9,6.9413,3394.0],[23.8,6.9472,3427.9],[23.7,6.9531,3461.8],[23.6,6.959,3495.7],[23.5,6.9649,3529.6],[23.4,6.9707,3563.5],[23.3,6.9766,3597.4],[23.2,6.9825,3631.3],[23.1,6.9884,3665.2],[23.0,6.9943,3699.1],[22.9,7.0002,3733.0],[22.8,7.0085,3766.9],[22.7,7.0168,3800.8],[22.6,7.0252,3834.7],[22.5,7.0335,3868.6],[22.4,7.0418,3902.5],[22.3,7.0502,3936.4],[22.2,7.0585,3970.3],[22.1,7.0668,4004.2],[22.0,7.0752,4038.1],[21.9,7.0835,4072.0],[21.8,7.0918,4105.9],[21.7,7.1002,4139.8],[21.6,7.1085,4173.7],[21.5,7.1168,4207.6],[21.4,7.1252,4241.5],[21.3,7.1335,4275.4],[21.2,7.1418,4309.3],[21.1,7.1502,4343.2],[21.0,7.1585,4377.1],[20.9,7.1668,4411.0],[20.8,7.1752,4444.9],[20.7,7.1835,4478.8],[20.6,7.1918,4512.7],[20.5,7.2002,4546.6],[20.4,7.2085,4580.5],[20.3,7.2168,4614.4],[20.2,7.2252,4648.3],[20.1,7.2335,4682.2],[20.0,7.2418,4716.1],[19.9,7.2502,4750.0],[19.8,7.2585,4783.9],[19.7,7.2668,4817.8],[19.6,7.2752,4851.7],[19.5,7.2835,4885.6],[19.4,7.2918,4919.5],[19.3,7.3002,4953.4],[19.2,7.3085,4987.3],[19.1,7.3168,5021.2],[19.0,7.3252,5055.1],[18.9,7.3335,5089.0],[18.8,7.3418,5122.9],[18.7,7.3502,5156.8],[18.6,7.3585,5190.7],[18.5,7.3668,5224.6],[18.4,7.3752,5258.5],[18.3,7.3835,5292.4],[18.2,7.3918,5326.3],[18.1,7.4002,5360.2],[18.0,7.4085,5394.1],[17.9,7.4168,5428.0],[17.8,7.4252,5461.9],[17.7,7.4335,5495.8],[17.6,7.4418,5529.7],[17.5,7.4502,5563.6],[17.4,7.4585,5597.5],[17.3,7.4668,5631.4],[17.2,7.4751,5665.3],[17.1,7.4835,5699.2],[17.0,7.4918,5733.1],[16.9,7.5001,5767.0],[16.8,7.5085,5800.9],[16.7,7.5168,5834.8],[16.6,7.5251,5868.7],[16.5,7.5335,5902.6],[16.4,7.5418,5936.5],[16.3,7.5501,5970.4],[16.2,7.5585,6004.3],[16.1,7.5668,6038.2],[16.0,7.5751,6072.1],[15.9,7.5835,6106.0],[15.8,7.5918,6139.9],[15.7,7.6001,6173.8],[15.6,7.6085,6207.7],[15.5,7.6168,6241.6],[15.4,7.6251,6275.5],[15.3,7.6335,6309.4],[15.2,7.6418,6343.3],[15.1,7.6501,6377.2],[15.0,7.6585,6411.1],[14.9,7.6668,6445.0],[14.8,7.6751,6478.9],[14.7,7.6835,6512.8],[14.6,7.6918,6546.7],[14.5,7.7001,6580.6],[14.4,7.7085,6614.5],[14.3,7.7168,6648.4],[14.2,7.7251,6682.3],[14.1,7.7335,6716.2],[14.0,7.7418,6750.1],[13.9,7.7501,6784.0],[13.8,7.7585,6817.9],[13.7,7.7668,6851.8],[13.6,7.7751,6885.7],[13.5,7.7835,6919.6],[13.4,7.7918,6953.5],[13.3,7.8001,6987.4],[13.2,7.8085,7021.3],[13.1,7.8168,7055.2],[13.0,7.8251,7089.1],[12.9,7.8335,7123.0],[12.8,7.8418,7156.9],[12.7,7.8501,7190.8],[12.6,7.8585,7224.7],[12.5,7.8668,7258.6],[12.4,7.8751,7292.5],[12.3,7.8835,7326.4],[12.2,7.8918,7360.3],[12.1,7.9001,7394.2],[12.0,7.9085,7428.1],[11.9,7.9168,7462.0],[11.8,7.9251,7495.9],[11.7,7.9335,7529.8],[11.6,7.9418,7563.7],[11.5,7.9501,7597.6],[11.4,7.9585,7631.5],[11.3,7.9668,7665.4],[11.2,7.9751,7699.3],[11.1,7.9835,7733.2],[11.0,7.9918,7767.1],[10.9,8.0001,7801.0],[10.8,8.0144,7834.9],[10.7,8.0287,7868.8],[10.6,8.043,7902.7],[10.5,8.0573,7936.6],[10.4,8.0716,7970.5],[10.3,8.0859,8004.4],[10.2,8.1002,8038.3],[10.1,8.1145,8072.2],[10.0,8.1288,8106.1],[9.9,8.1431,5.0],[9.8,8.1574,0.0],[9.7,8.1717,0.0],[9.6,8.186,0.0],[9.5,8.2003,0.0],[9.4,8.2146,0.0],[9.3,8.2289,0.0],[9.2,8.2432,0.0],[9.1,8.2575,0.0],[9.0,8.2718,0.0],[8.9,8.2861,0.0],[8.8,8.3004,0.0],[8.7,8.3147,0.0],[8.6,8.329,0.0],[8.5,8.3433,0.0],[8.4,8.3576,0.0],[8.3,8.3719,0.0],[8.2,8.3862,0.0],[8.1,8.4005,0.0],[8.0,8.4148,0.0],[7.9,8.4291,0.0],[7.8,8.4434,0.0],[7.7,8.4577,0.0],[7.6,8.472,0.0],[7.5,8.4863,0.0],[7.4,8.5006,0.0],[7.3,8.5149,0.0],[7.2,8.5292,0.0],[7.1,8.5435,0.0],[7.0,8.5578,0.0],[6.9,8.5721,0.0],[6.8,8.5864,0.0],[6.7,8.6007,0.0],[6.6,8.615,0.0],[6.5,8.6293,0.0],[6.4,8.6436,0.0],[6.3,8.6579,0.0],[6.2,8.6722,0.0],[6.1,8.6865,0.0],[6.0,8.7008,0.0],[5.9,8.7151,0.0],[5.8,8.7294,0.0],[5.7,8.7437,0.0],[5.6,8.758,0.0],[5.5,8.7723,0.0],[5.4,8.7866,0.0],[5.3,8.8009,0.0],[5.2,8.8152,0.0],[5.1,8.8295,0.0],[5.0,8.8438,0.0],[4.9,8.8581,0.0],[4.8,8.8724,0.0],[4.7,8.8867,0.0],[4.6,8.901,0.0],[4.5,8.9153,0.0],[4.4,8.9296,0.0],[4.3,8.9439,0.0],[4.2,8.9582,0.0],[4.1,8.9725,0.0],[4.0,8.9868,0.0],[3.9,9.0011,0.0],[3.8,9.0011,0.0],[3.7,9.0011,0.0],[3.6,9.0011,0.0],[3.5,9.0011,0.0],[3.4,9.0011,0.0],[3.3,9.0011,0.0],[3.2,9.0011,0.0],[3.1,9.0011,0.0],[3.0,9.0011,0.0],[2.9,9.0011,0.0],[2.8,9.0011,0.0],[2.7,9.0011,0.0],[2.6,9.0011,0.0],[2.5,9.0011,0.0],[2.4,9.0011,0.0],[2.3,9.0011,0.0],[2.2,9.0011,0.0],[2.1,9.0011,0.0],[2.0,9.0011,0.0],[1.9,9.0011,0.0],[1.8,9.0011,0.0],[1.7,9.0011,0.0],[1.6,9.0011,0.0],[1.5,9.0011,0.0],[1.4,9.0011,0.0],[1.3,9.0011,0.0],[1.2,9.0011,0.0],[1.1,9.0011,0.0],[1.0,9.0011,0.0],[0.9,9.0011,0.0],[0.8,9.0011,0.0],[0.7,9.0011,0.0],[0.6,9.0011,0.0],[0.5,9.0011,0.0],[0.4,9.0011,0.0],[0.3,9.0011,0.0],[0.2,9.0011,0.0],[0.1,9.0011,0.0]];</script>
+<script>/* 수시 입결 검색 — 정적 SPA.
+   원본(대학어디가 발표자료 정리본)의 시트별 기능을 탭으로 옮겨 담았다.
+     검색        ← 대학자료
+     대학 분석    ← NEW대학분석 + 수시분석시트(그래프)
+     집계·연도비교 ← 연도비교 피벗
+     등급 변환    ← 자체등급변환
+     대학 링크    ← 대학링크
+   모든 필터·집계·판정은 브라우저에서 수행된다. */
+(function () {
+  'use strict';
+  if (!window.ADIGA_DATA) {
+    document.body.textContent = '이 파일은 빈 양식입니다. 입결 자료를 넣은 뒤 사용하세요.';
+    return;
+  }
+  const RAW = window.ADIGA_DATA, LINKS = window.ADIGA_LINKS || {};
+  // 자체등급변환 표: 원본의 5등급 열은 백분위 약 90 아래 구간에서 수식이 깨져
+  // 8542.5 같은 값이 들어 있다. 9등급 열도 백분위 3.9 이하에서 9.0011로 범위를 넘는다.
+  // 두 열 모두 등급 범위를 벗어난 값은 결측으로 버린다.
+  const GRADE = (window.ADIGA_GRADE || []).map(([p, g9, g5]) =>
+    [p, (g9 >= 1 && g9 <= 9) ? g9 : null, (g5 >= 1 && g5 <= 5) ? g5 : null]);
+  // 위(백분위 100)에서부터 값이 성한 구간까지만 신뢰한다. 그 아래는 산발적으로
+  // 값이 남아 있어도 깨진 수식의 잔재이므로 함께 버린다.
+  function trimTail(col) {
+    let end = 0;
+    while (end < GRADE.length && GRADE[end][col] != null) end++;
+    for (let k = end; k < GRADE.length; k++) GRADE[k][col] = null;
+    return end ? GRADE[end - 1][0] : null;   // 유효한 최저 백분위
+  }
+  const G9_MIN = trimTail(1), G5_MIN = trimTail(2);
+  const D = RAW.dicts, C = RAW.cols, N = RAW.n;
+
+  const univ = C['대학'], region = C['지역'], year = C['연도'], method = C['교과/종합'],
+        adm = C['전형'], dept = C['학과'], track = C['인문/자연'], cat = C['소계열'],
+        seats = C['모집인원'], comp = C['경쟁률'], chuhap = C['추합'],
+        g50 = C['등급50'], g70 = C['등급70'], v50 = C['변환50'], v70 = C['변환70'],
+        vmax = C['만점'], applied = C['총지원지원'], passed = C['합격인원'], realComp = C['실경쟁률'];
+
+  // 원본 소계열 열에는 미분류 행이 빈칸과 '0.0' 두 가지로 섞여 있다. 하나로 합쳐
+  // 필터 목록과 집계 그룹에서 똑같이 빠지게 한다.
+  D['소계열'] = D['소계열'].map(s => (s === '0.0' ? '' : s));
+
+  // 원본에 미발표 데이터가 0으로 기재된 행 정규화(주로 2026학년도).
+  // 등급·변환점수·경쟁률·모집인원 0은 실존할 수 없는 값이므로 결측으로 취급한다.
+  for (let i = 0; i < N; i++) {
+    for (const a of [g50, g70, v50, v70, vmax, applied, passed]) if (a[i] === 0) a[i] = null;
+    if (comp[i] === 0 && g50[i] == null && g70[i] == null) { comp[i] = null; realComp[i] = null; }
+    if (realComp[i] === 0) realComp[i] = null;
+    if (seats[i] === 0) seats[i] = null;
+    if (chuhap[i] === 0 && comp[i] == null && g50[i] == null && g70[i] == null) chuhap[i] = null;
+
+    // 원본 변환점수 열에 9999가 결측 표시로 들어간 행이 있다(전주대 2025).
+    if (v50[i] === 9999) v50[i] = null;
+    if (v70[i] === 9999) v70[i] = null;
+    // 원본 만점 열이 깨진 행이 있다(신라대 2023 만점 6.3, 경기대 2023 만점 9 등).
+    // 변환점수가 만점을 5% 넘게 웃돌면 만점 쪽을 못 믿는다 → 환산백분위를 비운다.
+    // 5% 이내 초과는 가산점·반올림으로 설명되므로 그대로 둔다.
+    const hi = Math.max(v50[i] != null ? v50[i] : -Infinity, v70[i] != null ? v70[i] : -Infinity);
+    if (vmax[i] != null && hi > vmax[i] * 1.05) vmax[i] = null;
+  }
+  // 변환점수를 만점 대비 백분위로 환산(원본 수시분석시트의 '단순백분위')
+  function pctScore(i) {
+    return v50[i] != null && vmax[i] ? (v50[i] / vmax[i]) * 100 : null;
+  }
+
+  const univL = D['대학'].map(s => s.toLowerCase());
+  const admL = D['전형'].map(s => s.toLowerCase());
+  const deptL = D['학과'].map(s => s.toLowerCase());
+  const YEARS = [...new Set(year)].sort((a, b) => b - a);   // 최신 → 과거
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  const fmt = (v, dp) => v == null ? '<span style="color:var(--muted)">–</span>' : (dp != null ? v.toFixed(dp) : String(v));
+  const tokenize = q => q.toLowerCase().split(/\s+/).filter(Boolean);
+  const matchAll = (hay, toks) => toks.every(t => hay.includes(t));
+
+  /* ================= 차트 (인라인 SVG, 외부 의존성 없음) ================= */
+  const SERIES_VARS = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s6', '--s7', '--s8'];
+  const tip = $('tip');
+  function showTip(html, x, y) {
+    tip.innerHTML = html; tip.hidden = false;
+    const r = tip.getBoundingClientRect();
+    tip.style.left = Math.min(x + 12, window.innerWidth - r.width - 8) + 'px';
+    tip.style.top = Math.max(8, y - r.height - 10) + 'px';
+  }
+  const hideTip = () => { tip.hidden = true; };
+
+  // series: [{name, values: Map(year → value)}] · 연도축은 오래된 → 최신
+  // invert=true면 값이 작을수록 위(등급용). 마지막 점에 직접 라벨(≤4계열).
+  function chart(kind, series, opts) {
+    const years = [...YEARS].sort((a, b) => a - b);
+    const labelled = kind === 'line' && series.length <= 4;   // 직접 라벨 자리
+    const W = 540, H = 250, ml = 46, mr = labelled ? 84 : 20, mt = 14, mb = 30;
+    const pw = W - ml - mr, ph = H - mt - mb;
+    const vals = [];
+    for (const s of series) for (const y of years) { const v = s.values.get(y); if (v != null) vals.push(v); }
+    if (!vals.length) return '';
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (kind === 'bar') lo = 0;
+    if (hi === lo) { hi += 1; lo = Math.max(0, lo - 1); }
+    const pad = (hi - lo) * 0.12;
+    lo = kind === 'bar' ? 0 : lo - pad;
+    hi = hi + pad;
+    const inv = !!opts.invert;
+    const py = v => { const t = (v - lo) / (hi - lo); return mt + (inv ? t : 1 - t) * ph; };
+    // 연도는 각 슬롯의 중앙에 놓는다 — 막대가 y축 눈금 라벨을 덮지 않게.
+    const slotW = pw / years.length;
+    const px = y => ml + (years.indexOf(y) + 0.5) * slotW;
+    const dp = opts.dp != null ? opts.dp : 2;
+
+    let g = '';
+    // 눈금 5개 + 하치라인
+    for (let k = 0; k <= 4; k++) {
+      const v = lo + (hi - lo) * (k / 4), y = py(v);
+      g += `<line x1="${ml}" y1="${y.toFixed(1)}" x2="${W - mr}" y2="${y.toFixed(1)}" stroke="var(--grid)" stroke-width="1"/>`
+        + `<text x="${ml - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--ink-muted)" font-variant-numeric="tabular-nums">${v.toFixed(dp === 0 ? 0 : 1)}</text>`;
+    }
+    for (const y of years) {
+      g += `<text x="${px(y).toFixed(1)}" y="${H - 10}" text-anchor="middle" font-size="11.5" fill="var(--ink-muted)">${y}</text>`;
+    }
+    g += `<line x1="${ml}" y1="${mt + ph}" x2="${W - mr}" y2="${mt + ph}" stroke="var(--axis)" stroke-width="1"/>`;
+
+    if (kind === 'line') {
+      const labels = [];
+      series.forEach((s, si) => {
+        const col = `var(${SERIES_VARS[si % 8]})`;
+        const pts = years.filter(y => s.values.get(y) != null).map(y => [px(y), py(s.values.get(y))]);
+        if (pts.length > 1) {
+          g += `<path d="M${pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L')}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+        }
+        for (const p of pts) {
+          g += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4.5" fill="${col}" stroke="var(--card)" stroke-width="2"/>`;
+        }
+        // 직접 라벨: 계열이 적을 때만 (색상만으로 식별하지 않게)
+        if (labelled && pts.length) {
+          const last = pts[pts.length - 1];
+          labels.push({ x: last[0] + 9, y: last[1], col, name: s.name.length > 9 ? s.name.slice(0, 8) + '…' : s.name });
+        }
+      });
+      // 라벨이 겹치지 않게 세로로 벌린다
+      labels.sort((a, b) => a.y - b.y);
+      for (let k = 1; k < labels.length; k++) {
+        if (labels[k].y - labels[k - 1].y < 13) labels[k].y = labels[k - 1].y + 13;
+      }
+      for (const L of labels) {
+        g += `<text x="${L.x.toFixed(1)}" y="${(L.y + 4).toFixed(1)}" font-size="11" font-weight="700" fill="${L.col}">${esc(L.name)}</text>`;
+      }
+    } else {
+      const bw = Math.max(4, Math.min(26, (slotW * 0.72) / series.length - 2));
+      years.forEach(y => {
+        const cx = px(y), total = series.length * (bw + 2) - 2;
+        series.forEach((s, si) => {
+          const v = s.values.get(y);
+          if (v == null) return;
+          const col = `var(${SERIES_VARS[si % 8]})`;
+          const x = cx - total / 2 + si * (bw + 2);
+          const yTop = py(v), h = Math.max(1, mt + ph - yTop), r = Math.min(4, bw / 2, h);
+          g += `<path d="M${x.toFixed(1)} ${(mt + ph).toFixed(1)} V${(yTop + r).toFixed(1)} q0 ${-r} ${r} ${-r} h${(bw - 2 * r).toFixed(1)} q${r} 0 ${r} ${r} V${(mt + ph).toFixed(1)} Z" fill="${col}"/>`;
+        });
+      });
+    }
+    // 연도별 히트존(호버)
+    years.forEach(y => {
+      g += `<rect class="hz" data-y="${y}" x="${(px(y) - slotW / 2).toFixed(1)}" y="${mt}" width="${slotW.toFixed(1)}" height="${ph}" fill="transparent"/>`;
+    });
+
+    const legend = series.map((s, si) =>
+      `<span><i style="background:var(${SERIES_VARS[si % 8]})"></i>${esc(s.name)}</span>`).join('');
+    const id = 'c' + Math.random().toString(36).slice(2, 8);
+    return `<figure class="chart"><figcaption>${esc(opts.title)}</figcaption><div class="sub">${esc(opts.sub || '')}</div>`
+      + `<svg id="${id}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.title)}">${g}</svg>`
+      + (series.length > 1 ? `<div class="legend">${legend}</div>` : '')
+      + `</figure>`;
+  }
+
+  // 렌더 후 호버 연결 (연도 열 전체 → 계열별 값 툴팁)
+  function bindChart(root, series, opts) {
+    for (const svg of root.querySelectorAll('svg')) {
+      const s = svg._series;
+      if (!s) continue;
+      svg.addEventListener('mousemove', e => {
+        const hz = e.target.closest('.hz');
+        if (!hz) { hideTip(); return; }
+        const y = +hz.dataset.y;
+        const lines = s.series.filter(x => x.values.get(y) != null)
+          .map((x, i) => `<span style="color:var(${SERIES_VARS[s.series.indexOf(x) % 8]})">●</span> ${esc(x.name)} <b>${x.values.get(y).toFixed(s.dp)}</b>`);
+        if (!lines.length) { hideTip(); return; }
+        showTip(`<b>${y}학년도</b><br>${lines.join('<br>')}`, e.clientX, e.clientY);
+      });
+      svg.addEventListener('mouseleave', hideTip);
+    }
+  }
+  function renderCharts(container, specs) {
+    container.innerHTML = specs.map(sp => chart(sp.kind, sp.series, sp)).join('');
+    const svgs = container.querySelectorAll('svg');
+    specs.forEach((sp, i) => { if (svgs[i]) svgs[i]._series = { series: sp.series, dp: sp.dp != null ? sp.dp : 2 }; });
+    bindChart(container);
+  }
+
+  /* ================= 공통: 상세 모달 ================= */
+  const dlg = $('detail');
+  const METRIC = {
+    g70: { label: '70%컷', arr: g70, dp: 2, invert: true },
+    g50: { label: '50%컷', arr: g50, dp: 2, invert: true },
+    seats: { label: '모집인원', arr: seats, dp: 0 },
+    comp: { label: '경쟁률', arr: comp, dp: 2 },
+    realComp: { label: '실경쟁률', arr: realComp, dp: 2 },
+    chuhap: { label: '추합', arr: chuhap, dp: 0 },
+  };
+
+  function openDetail(u, d, a) {
+    const hits = [];
+    for (let k = 0; k < N; k++) {
+      if (univ[k] !== u || dept[k] !== d) continue;
+      if (a != null && adm[k] !== a) continue;
+      hits.push(k);
+    }
+    hits.sort((x, y2) => year[y2] - year[x] || adm[x] - adm[y2]);
+    $('dTitle').textContent = `${D['대학'][u]} ${D['학과'][d]}`;
+    const anyRow = hits[0];
+    $('dSub').textContent = [a != null ? D['전형'][a] : `전형 ${new Set(hits.map(k => adm[k])).size}개`,
+      anyRow != null ? D['지역'][region[anyRow]] : '', anyRow != null ? D['인문/자연'][track[anyRow]] : '']
+      .filter(Boolean).join(' · ');
+
+    $('dBody').innerHTML = hits.map(k => `<tr>`
+      + `<td><b>${year[k]}</b></td>`
+      + `<td>${esc(D['전형'][adm[k]])}</td>`
+      + `<td class="num">${fmt(seats[k])}</td>`
+      + `<td class="num">${fmt(comp[k], 2)}</td>`
+      + `<td class="num">${fmt(realComp[k], 2)}</td>`
+      + `<td class="num">${fmt(chuhap[k])}</td>`
+      + `<td class="num"><b>${fmt(g50[k], 2)}</b></td>`
+      + `<td class="num">${fmt(g70[k], 2)}</td>`
+      + `<td class="num">${fmt(v50[k], 1)}</td>`
+      + `<td class="num">${fmt(v70[k], 1)}</td>`
+      + `<td class="num">${fmt(pctScore(k), 1)}</td>`
+      + `</tr>`).join('');
+
+    // 전형별 계열 구성 (모집인원 많은 순 최대 8개)
+    const byAdm = new Map();
+    for (const k of hits) {
+      if (!byAdm.has(adm[k])) byAdm.set(adm[k], []);
+      byAdm.get(adm[k]).push(k);
+    }
+    const admList = [...byAdm.entries()]
+      .sort((x, y2) => (y2[1].reduce((s, k) => s + (seats[k] || 0), 0)) - (x[1].reduce((s, k) => s + (seats[k] || 0), 0)))
+      .slice(0, 8);
+    const mkSeries = arr => admList.map(([ac, ks]) => {
+      const m = new Map();
+      for (const k of ks) if (arr[k] != null) m.set(year[k], arr[k]);
+      return { name: D['전형'][ac], values: m };
+    }).filter(s => s.values.size);
+
+    const specs = [];
+    const cutS = mkSeries(g70);
+    if (cutS.length) specs.push({ kind: 'line', series: cutS, title: '등급 70%컷 추이', sub: '위로 갈수록 높은 등급(숫자가 작음)', invert: true, dp: 2 });
+    const compS = mkSeries(comp);
+    if (compS.length) specs.push({ kind: 'bar', series: compS, title: '경쟁률 추이', sub: '전형별 지원 경쟁률', dp: 2 });
+    renderCharts($('dCharts'), specs);
+    dlg.showModal();
+  }
+  $('dClose').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('close', hideTip);
+
+  /* ================= 탭 ================= */
+  const panes = { search: $('pane-search'), univ: $('pane-univ'), pivot: $('pane-pivot'), grade: $('pane-grade'), links: $('pane-links') };
+  function showTab(name) {
+    if (!panes[name]) return;
+    for (const btn of document.querySelectorAll('nav.tabs button')) btn.setAttribute('aria-selected', String(btn.dataset.tab === name));
+    for (const [k, el] of Object.entries(panes)) el.hidden = k !== name;
+  }
+  document.querySelector('nav.tabs').addEventListener('click', e => {
+    const b = e.target.closest('button[data-tab]');
+    if (!b) return;
+    showTab(b.dataset.tab);
+    location.hash = b.dataset.tab === 'search' ? '' : '#' + b.dataset.tab;
+  });
+  // 주소 해시로 탭·대학을 공유할 수 있다: #univ/고려대
+  function applyHash() {
+    const [tab, arg] = decodeURIComponent(location.hash.replace(/^#/, '')).split('/');
+    if (!tab) return;
+    showTab(tab);
+    if (tab === 'univ' && arg) selectUniv(arg);
+  }
+
+  /* ================= 자동완성 (공용) ================= */
+  function bindAutocomplete(input, box, getHits, onPick) {
+    let active = -1;
+    const hide = () => { box.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+    function render() {
+      const toks = tokenize(input.value.trim());
+      const hits = getHits(toks);
+      if (!hits.length) { hide(); return; }
+      const first = toks[0] || '';
+      box.innerHTML = hits.map(([nm, cnt]) => {
+        const lo = nm.toLowerCase(), at = first ? lo.indexOf(first) : -1;
+        const label = at >= 0
+          ? esc(nm.slice(0, at)) + '<mark>' + esc(nm.slice(at, at + first.length)) + '</mark>' + esc(nm.slice(at + first.length))
+          : esc(nm);
+        return `<button type="button" data-v="${esc(nm)}"><span>${label}</span><span class="cnt">${cnt.toLocaleString('ko-KR')}건</span></button>`;
+      }).join('');
+      box.hidden = false; input.setAttribute('aria-expanded', 'true'); active = -1;
+    }
+    const apply = v => { input.value = v; hide(); onPick(v); };
+    let deb;
+    input.addEventListener('input', () => {
+      clearTimeout(deb);
+      deb = setTimeout(() => { render(); onPick(input.value.trim(), true); }, 120);
+    });
+    input.addEventListener('keydown', e => {
+      const btns = box.hidden ? [] : [...box.querySelectorAll('button')];
+      if (e.key === 'ArrowDown' && btns.length) { e.preventDefault(); active = (active + 1) % btns.length; }
+      else if (e.key === 'ArrowUp' && btns.length) { e.preventDefault(); active = (active - 1 + btns.length) % btns.length; }
+      else if (e.key === 'Enter') { if (active >= 0 && btns[active]) { e.preventDefault(); apply(btns[active].dataset.v); } else hide(); return; }
+      else if (e.key === 'Escape') { hide(); return; }
+      else return;
+      btns.forEach((b, k) => b.classList.toggle('active', k === active));
+      if (btns[active]) btns[active].scrollIntoView({ block: 'nearest' });
+    });
+    box.addEventListener('mousedown', e => {
+      const b = e.target.closest('button[data-v]');
+      if (b) { e.preventDefault(); apply(b.dataset.v); }
+    });
+    input.addEventListener('blur', () => setTimeout(hide, 120));
+    input.addEventListener('focus', () => { if (input.value.trim()) render(); });
+  }
+
+  /* ================= 탭 1: 검색 ================= */
+  const els = {
+    qUniv: $('qUniv'), qDept: $('qDept'), qAdm: $('qAdm'),
+    year: $('fYear'), region: $('fRegion'), method: $('fMethod'), track: $('fTrack'), cat: $('fCat'),
+    grade: $('myGrade'), chips: $('judgeChips'), count: $('count'), scope: $('scope'),
+    thead: $('theadRow'), tbody: $('tbody'), empty: $('empty'), more: $('moreBtn'),
+  };
+  function fillSelect(sel, items) {
+    for (const [val, label] of items) {
+      const o = document.createElement('option');
+      o.value = val; o.textContent = label;
+      sel.appendChild(o);
+    }
+  }
+  fillSelect(els.year, YEARS.map(y => [y, y + '학년도']));
+  const regionSorted = D['지역'].map((r, i) => [i, r]).filter(([, r]) => r).sort((a, b) => a[1].localeCompare(b[1], 'ko'));
+  fillSelect(els.region, regionSorted);
+  fillSelect(els.method, D['교과/종합'].map((m, i) => [i, m]));
+  fillSelect(els.track, D['인문/자연'].map((t, i) => [i, t]).filter(([, t]) => t));
+  const catSorted = D['소계열'].map((c, i) => [i, c]).filter(([, c]) => c && c !== '0.0').sort((a, b) => a[1].localeCompare(b[1], 'ko'));
+  fillSelect(els.cat, catSorted);
+
+  function judge(i, g) {
+    const cut = g70[i] != null ? g70[i] : g50[i];
+    if (cut == null) return null;
+    if (g <= cut - 0.25) return '안정';
+    if (g <= cut + 0.25) return '적정';
+    if (g <= cut + 0.8) return '도전';
+    return '어려움';
+  }
+  function deltaHtml(cut) {
+    if (cut == null || state.grade == null) return '';
+    const d = cut - state.grade;
+    const cls = d > 0.005 ? 'plus' : d < -0.005 ? 'minus' : 'zero';
+    return `<span class="delta ${cls}">${(d >= 0 ? '+' : '') + d.toFixed(2)}</span>`;
+  }
+
+  const state = {
+    qUniv: '', qDept: '', qAdm: '', year: '', region: '', method: '', track: '', cat: '',
+    grade: null, judges: new Set(), sortKey: 'g50', sortDir: 1, shown: 300,
+  };
+  const FIELDS = {
+    qUniv: { names: D['대학'], lower: univL, codes: univ, exact: new Set(univL) },
+    qDept: { names: D['학과'], lower: deptL, codes: dept, exact: new Set(deptL) },
+    qAdm: { names: D['전형'], lower: admL, codes: adm, exact: new Set(admL) },
+  };
+  function fieldPred(key) {
+    const q = state[key].trim().toLowerCase();
+    if (!q) return null;
+    const f = FIELDS[key];
+    if (f.exact.has(q)) return c => f.lower[c] === q;
+    const toks = q.split(/\s+/);
+    return c => matchAll(f.lower[c], toks);
+  }
+  const COLS = [
+    { key: 'year', label: '학년도', num: true, get: i => year[i] },
+    { key: 'region', label: '지역', num: false, get: i => D['지역'][region[i]] },
+    { key: 'univ', label: '대학', num: false, get: i => D['대학'][univ[i]] },
+    { key: 'method', label: '유형', num: false, get: i => D['교과/종합'][method[i]] },
+    { key: 'adm', label: '전형', num: false, get: i => D['전형'][adm[i]] },
+    { key: 'dept', label: '학과', num: false, get: i => D['학과'][dept[i]] },
+    { key: 'track', label: '계열', num: false, get: i => D['인문/자연'][track[i]] },
+    { key: 'seats', label: '모집', num: true, get: i => seats[i] },
+    { key: 'comp', label: '경쟁률', num: true, get: i => comp[i] },
+    { key: 'chuhap', label: '추합', num: true, get: i => chuhap[i] },
+    { key: 'g50', label: '등급50%', num: true, get: i => g50[i] },
+    { key: 'g70', label: '등급70%', num: true, get: i => g70[i] },
+  ];
+  function runFilter(skipKey) {
+    const pU = skipKey === 'qUniv' ? null : fieldPred('qUniv');
+    const pD = skipKey === 'qDept' ? null : fieldPred('qDept');
+    const pA = skipKey === 'qAdm' ? null : fieldPred('qAdm');
+    const wYear = state.year === '' ? null : +state.year;
+    const wRegion = state.region === '' ? null : +state.region;
+    const wMethod = state.method === '' ? null : +state.method;
+    const wTrack = state.track === '' ? null : +state.track;
+    const wCat = state.cat === '' ? null : +state.cat;
+    const g = state.grade;
+    const useJudge = g != null && state.judges.size > 0;
+    const out = [];
+    for (let i = 0; i < N; i++) {
+      if (wYear !== null && year[i] !== wYear) continue;
+      if (wRegion !== null && region[i] !== wRegion) continue;
+      if (wMethod !== null && method[i] !== wMethod) continue;
+      if (wTrack !== null && track[i] !== wTrack) continue;
+      if (wCat !== null && cat[i] !== wCat) continue;
+      if (pU && !pU(univ[i])) continue;
+      if (pD && !pD(dept[i])) continue;
+      if (pA && !pA(adm[i])) continue;
+      if (useJudge) {
+        const j = judge(i, g);
+        if (j === null || !state.judges.has(j)) continue;
+      }
+      out.push(i);
+    }
+    return out;
+  }
+  function runSort(idx) {
+    const col = COLS.find(c => c.key === state.sortKey);
+    if (!col) return idx;
+    const get = col.get, dir = state.sortDir, isNum = col.num;
+    idx.sort((a, b) => {
+      const va = get(a), vb = get(b);
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      return (isNum ? (va - vb) : String(va).localeCompare(String(vb), 'ko')) * dir;
+    });
+    return idx;
+  }
+  let current = [];
+  function renderHead() {
+    let h = COLS.map(c => {
+      const arrow = state.sortKey === c.key ? `<span class="arrow">${state.sortDir === 1 ? '▲' : '▼'}</span>` : '';
+      return `<th class="${c.num ? 'num' : ''}" data-sort="${c.key}">${c.label} ${arrow}</th>`;
+    }).join('');
+    if (state.grade != null) h += '<th>판정</th>';
+    els.thead.innerHTML = h;
+  }
+  function renderBody() {
+    const showJudge = state.grade != null;
+    let html = '';
+    for (const i of current.slice(0, state.shown)) {
+      const mName = D['교과/종합'][method[i]];
+      html += `<tr data-i="${i}">`
+        + `<td class="num">${year[i]}</td>`
+        + `<td>${esc(D['지역'][region[i]])}</td>`
+        + `<td><b>${esc(D['대학'][univ[i]])}</b></td>`
+        + `<td><span class="badge b-${esc(mName)}">${esc(mName)}</span></td>`
+        + `<td>${esc(D['전형'][adm[i]])}</td>`
+        + `<td>${esc(D['학과'][dept[i]])}</td>`
+        + `<td>${esc(D['인문/자연'][track[i]] || '–')}</td>`
+        + `<td class="num">${fmt(seats[i])}</td>`
+        + `<td class="num">${fmt(comp[i], 2)}</td>`
+        + `<td class="num">${fmt(chuhap[i])}</td>`
+        + `<td class="num"><b>${fmt(g50[i], 2)}</b>${deltaHtml(g50[i])}</td>`
+        + `<td class="num">${fmt(g70[i], 2)}${deltaHtml(g70[i])}</td>`;
+      if (showJudge) {
+        const j = judge(i, state.grade);
+        html += `<td>${j ? `<span class="judge j-${j}">${j}</span>` : ''}</td>`;
+      }
+      html += '</tr>';
+    }
+    els.tbody.innerHTML = html;
+    els.empty.hidden = current.length > 0;
+    els.more.hidden = current.length <= state.shown;
+    els.count.textContent = current.length.toLocaleString('ko-KR');
+    const parts = [];
+    if (state.year) parts.push(state.year + '학년도');
+    if (state.region !== '') parts.push(D['지역'][+state.region]);
+    if (state.method !== '') parts.push(D['교과/종합'][+state.method]);
+    for (const q of [state.qUniv, state.qDept, state.qAdm]) if (q) parts.push(`"${q}"`);
+    els.scope.textContent = parts.length ? parts.join(' · ') : '전체 조건';
+  }
+  function refresh() {
+    current = runSort(runFilter());
+    state.shown = 300;
+    renderHead();
+    renderBody();
+  }
+  // 검색어 자동완성: 현재 걸린 다른 조건 안에서 후보와 건수를 계산한다.
+  function suggestFor(stateKey) {
+    return toks => {
+      if (!toks.length) return [];
+      const f = FIELDS[stateKey];
+      const idx = runFilter(stateKey);
+      const counts = new Map();
+      for (const i of idx) counts.set(f.codes[i], (counts.get(f.codes[i]) || 0) + 1);
+      const first = toks[0], starts = [], contains = [];
+      for (const c of counts.keys()) {
+        const nm = f.names[c];
+        if (!nm || !matchAll(f.lower[c], toks)) continue;
+        (f.lower[c].startsWith(first) ? starts : contains).push(c);
+      }
+      const byCount = (a, b) => counts.get(b) - counts.get(a);
+      starts.sort(byCount); contains.sort(byCount);
+      return starts.concat(contains).slice(0, 12).map(c => [f.names[c], counts.get(c)]);
+    };
+  }
+  for (const [input, box, key] of [[els.qUniv, $('sugUniv'), 'qUniv'], [els.qDept, $('sugDept'), 'qDept'], [els.qAdm, $('sugAdm'), 'qAdm']]) {
+    bindAutocomplete(input, box, suggestFor(key), v => { state[key] = v.trim(); refresh(); });
+  }
+  for (const [el, key] of [[els.year, 'year'], [els.region, 'region'], [els.method, 'method'], [els.track, 'track'], [els.cat, 'cat']]) {
+    el.addEventListener('change', () => { state[key] = el.value; refresh(); });
+  }
+  els.grade.addEventListener('input', () => {
+    const v = parseFloat(els.grade.value);
+    state.grade = Number.isFinite(v) && v >= 1 && v <= 9 ? v : null;
+    els.chips.hidden = state.grade == null;
+    if (state.grade == null) {
+      state.judges.clear();
+      for (const b of els.chips.querySelectorAll('.chip')) b.setAttribute('aria-pressed', 'false');
+    }
+    refresh();
+  });
+  els.chips.addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    const j = b.dataset.j;
+    if (state.judges.has(j)) { state.judges.delete(j); b.setAttribute('aria-pressed', 'false'); }
+    else { state.judges.add(j); b.setAttribute('aria-pressed', 'true'); }
+    refresh();
+  });
+  els.thead.addEventListener('click', e => {
+    const th = e.target.closest('th[data-sort]');
+    if (!th) return;
+    if (state.sortKey === th.dataset.sort) state.sortDir *= -1;
+    else { state.sortKey = th.dataset.sort; state.sortDir = 1; }
+    current = runSort(current);
+    renderHead(); renderBody();
+  });
+  els.tbody.addEventListener('click', e => {
+    const tr = e.target.closest('tr[data-i]');
+    if (tr) { const i = +tr.dataset.i; openDetail(univ[i], dept[i], null); }
+  });
+  els.more.addEventListener('click', () => { state.shown += 300; renderBody(); });
+
+  /* ================= 탭 2: 대학 분석 (NEW대학분석 + 훑어보기) ================= */
+  const uState = { univ: null, metrics: new Set(['g70', 'comp']) };
+  const rowsByUniv = new Map();
+  for (let i = 0; i < N; i++) {
+    if (!rowsByUniv.has(univ[i])) rowsByUniv.set(univ[i], []);
+    rowsByUniv.get(univ[i]).push(i);
+  }
+  // 원본 대학링크 시트의 '학과안내자료' 열은 전 대학이 비어 있어 싣지 않는다.
+  const LINK_LABELS = [['입학처홈페이지', '입학처'], ['대학교 입결발표', '입결 발표'], ['대학알리미', '대학알리미'],
+    ['종합전형가이드북', '종합전형 가이드북'], ['2026', '어디가 2026'], ['2027', '어디가 2027']];
+  // 대학자료와 대학링크 시트의 캠퍼스 표기가 서로 다른 대학들.
+  const LINK_ALIAS = { '중앙대(다빈치)': '중앙대2캠', '홍익대(세)': '홍익대' };
+
+  function renderUnivLinks(name) {
+    const box = $('uLinks');
+    const alias = LINK_ALIAS[name];
+    const e = LINKS[name] || (alias ? LINKS[alias] : null);
+    const none = '<span class="none">이 대학의 링크 정보가 원본에 없습니다</span>';
+    if (!e) { box.innerHTML = none; return; }
+    const btns = LINK_LABELS.filter(([k]) => e[k])
+      .map(([k, label]) => `<a class="linkbtn" href="${esc(e[k])}" target="_blank" rel="noopener">${esc(label)} ↗</a>`).join('');
+    if (!btns) { box.innerHTML = none; return; }
+    box.innerHTML = btns + (LINKS[name] ? ''
+      : `<span class="none">원본 링크 시트의 <b>${esc(alias)}</b> 기준입니다</span>`);
+  }
+
+  function renderUniv() {
+    const uc = uState.univ;
+    if (uc == null) return;
+    const name = D['대학'][uc];
+    $('uTitle').textContent = name;
+    renderUnivLinks(name);
+
+    // 전형 × 학과 조합을 행으로, 연도를 열로 편다.
+    const groups = new Map();
+    for (const i of rowsByUniv.get(uc)) {
+      const key = adm[i] + '\u0000' + dept[i];
+      if (!groups.has(key)) groups.set(key, { adm: adm[i], dept: dept[i], years: new Map() });
+      groups.get(key).years.set(year[i], i);
+    }
+    const mets = ['g70', 'g50', 'seats', 'comp', 'realComp', 'chuhap'].filter(m => uState.metrics.has(m));
+    if (!mets.length) mets.push('g70');
+    const sortMet = mets[0];
+
+    const list = [...groups.values()].sort((a, b) => {
+      const av = pick(a, sortMet), bv = pick(b, sortMet);
+      if (av == null && bv == null) return D['전형'][a.adm].localeCompare(D['전형'][b.adm], 'ko');
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return METRIC[sortMet].invert ? av - bv : bv - av;   // 등급은 오름차순(우수 먼저), 나머지는 큰 값 먼저
+    });
+    function pick(gr, m) {   // 최신 연도의 값(없으면 그 이전 연도)
+      for (const y of YEARS) {
+        const i = gr.years.get(y);
+        if (i != null && METRIC[m].arr[i] != null) return METRIC[m].arr[i];
+      }
+      return null;
+    }
+
+    let h1 = '<tr><th rowspan="2" style="min-width:230px">전형 · 학과</th>';
+    let h2 = '<tr>';
+    for (const m of mets) {
+      h1 += `<th class="num" colspan="${YEARS.length}" style="border-left:1px solid var(--line)">${METRIC[m].label}</th>`;
+      h2 += YEARS.map((y, k) => `<th class="num yr" ${k === 0 ? 'style="border-left:1px solid var(--line)"' : ''}>${y}</th>`).join('');
+    }
+    $('uThead').innerHTML = h1 + '</tr>' + h2 + '</tr>';
+
+    $('uTbody').innerHTML = list.map(gr => {
+      let r = `<tr data-adm="${gr.adm}" data-dept="${gr.dept}"><td class="grp">${esc(D['전형'][gr.adm])} <span style="font-weight:400;color:var(--muted)">·</span> ${esc(D['학과'][gr.dept])}</td>`;
+      for (const m of mets) {
+        const M = METRIC[m];
+        r += YEARS.map((y, k) => {
+          const i = gr.years.get(y);
+          const v = i != null ? M.arr[i] : null;
+          return `<td class="num" ${k === 0 ? 'style="border-left:1px solid var(--line)"' : ''}>${fmt(v, M.dp)}</td>`;
+        }).join('');
+      }
+      return r + '</tr>';
+    }).join('');
+    $('uEmpty').hidden = list.length > 0;
+    $('uScope').textContent = `${list.length}개 전형·학과 · ${YEARS[YEARS.length - 1]}~${YEARS[0]}학년도`;
+  }
+
+  function selectUniv(name) {
+    const c = D['대학'].indexOf(String(name).trim());
+    if (c < 0) return;
+    uState.univ = c;
+    $('uPick').value = D['대학'][c];
+    renderUniv();
+  }
+  bindAutocomplete($('uPick'), $('sugUPick'), toks => {
+    if (!toks.length) return [];
+    const hits = [];
+    for (let c = 0; c < D['대학'].length; c++) {
+      if (matchAll(univL[c], toks)) hits.push([D['대학'][c], (rowsByUniv.get(c) || []).length]);
+    }
+    return hits.sort((a, b) => b[1] - a[1]).slice(0, 12);
+  }, v => {
+    selectUniv(v);
+    if (uState.univ != null) location.hash = '#univ/' + encodeURIComponent(D['대학'][uState.univ]);
+  });
+  $('uMetrics').addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    const m = b.dataset.m;
+    if (uState.metrics.has(m)) { uState.metrics.delete(m); b.setAttribute('aria-pressed', 'false'); }
+    else { uState.metrics.add(m); b.setAttribute('aria-pressed', 'true'); }
+    renderUniv();
+  });
+  $('uTbody').addEventListener('click', e => {
+    const tr = e.target.closest('tr[data-dept]');
+    if (tr && uState.univ != null) openDetail(uState.univ, +tr.dataset.dept, +tr.dataset.adm);
+  });
+
+  /* ================= 탭 3: 집계 · 연도비교 ================= */
+  const PKEYS = {
+    univ: { label: '대학', codes: univ, names: D['대학'] },
+    region: { label: '지역', codes: region, names: D['지역'] },
+    adm: { label: '전형', codes: adm, names: D['전형'] },
+    method: { label: '전형 유형', codes: method, names: D['교과/종합'] },
+    dept: { label: '학과', codes: dept, names: D['학과'] },
+    track: { label: '계열', codes: track, names: D['인문/자연'] },
+    cat: { label: '소계열', codes: cat, names: D['소계열'] },
+  };
+  const PMETRIC = {
+    g70: { arr: g70, dp: 2, sum: false }, g50: { arr: g50, dp: 2, sum: false },
+    comp: { arr: comp, dp: 2, sum: false }, realComp: { arr: realComp, dp: 2, sum: false },
+    v50: { arr: v50, dp: 1, sum: false }, v70: { arr: v70, dp: 1, sum: false },
+    seats: { arr: seats, dp: 0, sum: true }, chuhap: { arr: chuhap, dp: 0, sum: true },
+  };
+  fillSelect($('pKey1'), Object.entries(PKEYS).map(([k, v]) => [k, v.label]));
+  fillSelect($('pKey2'), Object.entries(PKEYS).map(([k, v]) => [k, v.label]));
+  $('pKey1').value = 'univ';
+  fillSelect($('pRegion'), regionSorted);
+  fillSelect($('pMethod'), D['교과/종합'].map((m, i) => [i, m]));
+
+  function renderPivot() {
+    const k1 = PKEYS[$('pKey1').value], k2v = $('pKey2').value, k2 = k2v ? PKEYS[k2v] : null;
+    const metKey = $('pMetric').value, M = PMETRIC[metKey];
+    const wRegion = $('pRegion').value === '' ? null : +$('pRegion').value;
+    const wMethod = $('pMethod').value === '' ? null : +$('pMethod').value;
+
+    const groups = new Map();   // label → {sum,cnt} per year
+    for (let i = 0; i < N; i++) {
+      if (wRegion !== null && region[i] !== wRegion) continue;
+      if (wMethod !== null && method[i] !== wMethod) continue;
+      const v = M.arr[i];
+      if (v == null) continue;
+      const n1 = k1.names[k1.codes[i]];
+      if (!n1) continue;
+      let label = n1;
+      if (k2) {
+        const n2 = k2.names[k2.codes[i]];
+        if (!n2) continue;
+        label += ' · ' + n2;
+      }
+      let g = groups.get(label);
+      if (!g) { g = { years: new Map() }; groups.set(label, g); }
+      let cell = g.years.get(year[i]);
+      if (!cell) { cell = { sum: 0, cnt: 0 }; g.years.set(year[i], cell); }
+      cell.sum += v; cell.cnt++;
+    }
+    const val = cell => cell == null ? null : (M.sum ? cell.sum : cell.sum / cell.cnt);
+    const latest = YEARS[0], prev = YEARS[1];
+    const list = [...groups.entries()].map(([label, g]) => {
+      const cur = val(g.years.get(latest)), pre = val(g.years.get(prev));
+      return { label, g, cur, pre, delta: cur != null && pre != null ? cur - pre : null };
+    }).sort((a, b) => {
+      if (a.cur == null && b.cur == null) return a.label.localeCompare(b.label, 'ko');
+      if (a.cur == null) return 1;
+      if (b.cur == null) return -1;
+      return metKey.startsWith('g') ? a.cur - b.cur : b.cur - a.cur;
+    });
+
+    $('pThead').innerHTML = '<tr><th style="min-width:200px">' + esc(k1.label + (k2 ? ' · ' + k2.label : ''))
+      + '</th>' + YEARS.slice().reverse().map(y => `<th class="num">${y}</th>`).join('')
+      + `<th class="num">${latest} − ${prev}</th><th class="num">표본</th></tr>`;
+    $('pTbody').innerHTML = list.slice(0, 500).map(r => {
+      const cells = YEARS.slice().reverse().map(y => `<td class="num">${fmt(val(r.g.years.get(y)), M.dp)}</td>`).join('');
+      const d = r.delta;
+      const cls = d == null ? 'zero' : (metKey.startsWith('g') ? (d < 0 ? 'plus' : d > 0 ? 'minus' : 'zero') : (d > 0 ? 'plus' : d < 0 ? 'minus' : 'zero'));
+      const dTxt = d == null ? '–' : (d >= 0 ? '+' : '') + d.toFixed(M.dp);
+      const total = [...r.g.years.values()].reduce((s, c) => s + c.cnt, 0);
+      return `<tr><td><b>${esc(r.label)}</b></td>${cells}<td class="num"><span class="delta ${cls}">${dTxt}</span></td><td class="num" style="color:var(--muted)">${total}</td></tr>`;
+    }).join('');
+    $('pCount').textContent = list.length.toLocaleString('ko-KR');
+    $('pNote').textContent = (M.sum ? '합계' : '평균') + ' · 값이 있는 행만 집계'
+      + (list.length > 500 ? ' · 상위 500개 표시' : '');
+  }
+  for (const id of ['pKey1', 'pKey2', 'pRegion', 'pMethod', 'pMetric']) $(id).addEventListener('change', renderPivot);
+  renderPivot();
+
+  /* ================= 탭 4: 등급 변환 ================= */
+  // GRADE: [기준백분위, 9등급, 5등급] · 백분위 내림차순
+  // 결측 구간(원본 수식이 깨진 아래쪽)은 보간하지 않고 그대로 결측으로 돌려준다.
+  const lerp = (a, b, t) => (a == null || b == null) ? null : a + (b - a) * t;
+  function pctToGrade(p) {
+    if (!GRADE.length || !(p >= 0 && p <= 100)) return [null, null];
+    for (let k = 0; k < GRADE.length; k++) {
+      const [gp, g9, g5] = GRADE[k];
+      if (p >= gp) {
+        if (k === 0) return [g9, g5];
+        const [pp, p9, p5] = GRADE[k - 1];   // 한 칸 위(더 높은 백분위)
+        const t = (p - gp) / (pp - gp);      // 선형 보간
+        return [lerp(g9, p9, t), lerp(g5, p5, t)];
+      }
+    }
+    const last = GRADE[GRADE.length - 1];
+    return [last[1], last[2]];
+  }
+  // 등급 → 백분위: 표는 백분위 내림차순이고 등급은 그에 따라 커진다.
+  // 입력 등급 이상이 되는 첫 지점의 기준 백분위를 돌려준다.
+  function gradeToPct(g) {
+    if (!GRADE.length || !(g >= 1 && g <= 9)) return null;
+    let lastValid = null;
+    for (const [p, g9] of GRADE) {
+      if (g9 == null) break;                 // 결측 구간부터는 표를 믿지 않는다
+      if (g9 >= g) return p;
+      lastValid = p;
+    }
+    return lastValid;   // 표가 닿는 최저 백분위까지 내려가도 등급에 못 미치는 경우
+  }
+  $('cvPct').addEventListener('input', () => {
+    const p = parseFloat($('cvPct').value);
+    const [g9, g5] = pctToGrade(p);
+    $('cvG9').textContent = g9 == null ? '–' : g9.toFixed(2);
+    $('cvG5').textContent = g5 == null ? '–' : g5.toFixed(2);
+  });
+  $('cvGrade').addEventListener('input', () => {
+    const p = gradeToPct(parseFloat($('cvGrade').value));
+    $('cvPctOut').textContent = p == null ? '–' : p.toFixed(1);
+  });
+  const notes = [];
+  if (G5_MIN != null) notes.push(`5등급 열은 백분위 ${G5_MIN.toFixed(1)} 아래 구간에서 수식이 깨져 있습니다(8542.5 같은 값).`);
+  if (G9_MIN != null && G9_MIN > GRADE[GRADE.length - 1][0]) notes.push(`9등급 열도 백분위 ${G9_MIN.toFixed(1)} 아래 구간에서 9를 넘는 값이 나옵니다.`);
+  $('gNote').textContent = notes.length
+    ? '원본 시트의 ' + notes.join(' ') + ' 등급 범위를 벗어난 구간은 –로 비워 두었습니다.' : '';
+  $('gTbody').innerHTML = GRADE.map(([p, g9, g5]) =>
+    `<tr><td class="num"><b>${p.toFixed(1)}</b></td><td class="num">${g9 == null ? '–' : g9.toFixed(2)}</td><td class="num">${g5 == null ? '–' : g5.toFixed(2)}</td></tr>`).join('');
+
+  /* ================= 탭 5: 대학 링크 ================= */
+  function renderLinks() {
+    const q = $('lQuery').value.trim().toLowerCase();
+    const names = Object.keys(LINKS).filter(n => !q || n.toLowerCase().includes(q)).sort((a, b) => a.localeCompare(b, 'ko'));
+    const cell = (e, k) => e[k] ? `<a class="linkbtn" href="${esc(e[k])}" target="_blank" rel="noopener">열기 ↗</a>` : '<span style="color:var(--muted)">–</span>';
+    $('lTbody').innerHTML = names.map(n => {
+      const e = LINKS[n];
+      const adiga = e['2026'] || e['2027'];
+      return `<tr style="cursor:default"><td><b>${esc(n)}</b></td>`
+        + `<td>${cell(e, '입학처홈페이지')}</td><td>${cell(e, '대학교 입결발표')}</td><td>${cell(e, '대학알리미')}</td>`
+        + `<td>${cell(e, '종합전형가이드북')}</td>`
+        + `<td>${adiga ? `<a class="linkbtn" href="${esc(adiga)}" target="_blank" rel="noopener">어디가 ↗</a>` : '<span style="color:var(--muted)">–</span>'}</td></tr>`;
+    }).join('');
+    $('lCount').textContent = names.length;
+    $('lEmpty').hidden = names.length > 0;
+  }
+  $('lQuery').addEventListener('input', renderLinks);
+  renderLinks();
+
+  // 학년도 범위는 데이터에서 계산하고, 출처 문구는 양식으로 만든 사이트의 설정을 따른다.
+  const yearRange = YEARS.length > 1 ? `${YEARS[YEARS.length - 1]}~${YEARS[0]}학년도` : `${YEARS[0]}학년도`;
+  $('yearNote').textContent = yearRange;
+  $('yearSpan').textContent = `${YEARS.length}개년(${yearRange})`;
+  const CFG = window.SITE_CONFIG;
+  if (CFG) {
+    $('srcNote').textContent = CFG.source;
+    $('extraNote').textContent = CFG.note || '';
+    $('kitLink').remove();
+  }
+  $('statTotal').textContent = `· ${D['대학'].length}개 대학 · ${N.toLocaleString('ko-KR')}건`;
+  refresh();
+  applyHash();
+  window.addEventListener('hashchange', applyHash);
+})();
+</script>
+</body>
+</html>

@@ -64,6 +64,21 @@ python3 -m http.server 8000   # http://localhost:8000
 `numbers-parser`로 시트를 추출해 `data.js` / `links.js` / `grade.js`를 생성했습니다.
 추출 스크립트는 저장소에 포함되어 있지 않습니다(원본 파일이 저장소 밖에 있음).
 
+## 선생님용 양식 (공개 키트)
+
+선생님이 Claude 앱에 자기 자료를 주면, 이 사이트의 양식에 넣어 **독립된 HTML 파일 하나**를 만들 수 있습니다. 서버가 없는 정적 파일이라 원본 사이트나 저장소가 없어져도 이미 만든 사이트는 계속 동작합니다.
+
+- 선생님용 안내: https://jihugwak.github.io/susi-search/teachers.html
+- 작업 안내(Claude용): [`api/v1/INSTRUCTIONS.md`](api/v1/INSTRUCTIONS.md)
+- 키트: `api/v1/susi-site-kit.zip` (`shell.html`, `build.py`, `sample.csv`, 안내문)
+- 양식에는 입결 자료가 없고, 대학 링크와 등급 변환표만 기본값으로 들어 있습니다.
+
+`app.js`나 `index.html`을 고쳤다면 공개 양식도 다시 만들어 함께 커밋합니다.
+
+```bash
+python3 scripts/make_shell.py
+```
+
 ## 원본 데이터의 알려진 결함과 보정
 
 원본 시트를 전수 감사해 아래를 사이트에서 보정했습니다. 데이터를 갱신할 때 같은 처리가 필요합니다.
