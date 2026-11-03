@@ -9,6 +9,7 @@
     "sample": "https://jihugwak.github.io/susi-search/api/v1/sample.csv",
     "kit_zip": "https://jihugwak.github.io/susi-search/api/v1/susi-site-kit.zip"
   },
+  "upload": "https://github.com/jihugwak/susi-search/issues/new?template=upload.yml",
   "git": "https://github.com/jihugwak/susi-search.git",
   "git_path": "api/v1",
   "schema": {

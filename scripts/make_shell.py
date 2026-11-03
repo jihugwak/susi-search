@@ -23,7 +23,7 @@ def inline(body):
 
 
 html = read("index.html")
-scripts = re.search(r'<script src="data\.js"></script>.*<script src="app\.js"></script>', html, re.S)
+scripts = re.search(r'<script src="loader\.js"></script>', html)
 assert scripts, "index.html의 script 태그를 찾지 못했습니다"
 block = "\n".join([
     '<script id="susi-config">window.SITE_CONFIG=null;</script>',

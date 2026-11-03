@@ -47,13 +47,18 @@ button,.btn{display:inline-block;background:var(--accent);color:var(--card);bord
   </section>
 
   <section>
-    <h2>3. 완성된 파일 사용하기</h2>
-    <p>Claude가 준 <b>.html 파일</b>을 더블클릭하면 바로 열립니다. 교내 공유 폴더로 나눠도 됩니다.</p>
-    <p>인터넷 주소로 공유하려면 Netlify Drop 같은 무료 호스팅에 올리면 됩니다.</p>
-    <p class="small">학생 이름 같은 개인정보는 사이트에 넣지 마세요. 입결 자료를 공개할 때는 자료의 출처와 이용 조건을 확인해 주세요.</p>
+    <h2>3. 파일 올리기</h2>
+    <ol>
+      <li>처음이라면 <a href="https://github.com/signup">GitHub 계정</a>을 무료로 만듭니다. 올린 사람을 구분하는 용도입니다.</li>
+      <li>아래 버튼을 눌러 글쓰기 화면을 엽니다.</li>
+      <li>Claude가 준 <b>.html 파일</b>을 사이트 파일 칸에 끌어다 놓고, 확인에 체크한 뒤 <b>Create</b>를 누릅니다.</li>
+      <li>2~3분 뒤 글에 번호가 붙은 주소가 달립니다. 이 주소를 학생들에게 보내면 됩니다.</li>
+    </ol>
+    <a class="btn" href="https://github.com/jihugwak/susi-search/issues/new?template=upload.yml">파일 올리러 가기</a>
+    <p class="small" style="margin-top:10px">올린 자료는 누구나 볼 수 있으니 학생 이름 같은 개인정보는 넣지 마세요. 입결 자료를 공개할 때는 자료의 출처와 이용 조건을 확인해 주세요.</p>
   </section>
 
-  <p class="small"><a href="index.html">수시입결검색으로 돌아가기</a></p>
+  <p class="small"><a href="s/">선생님별 자료 보기</a> · <a href="index.html">수시입결검색으로 돌아가기</a></p>
 </main>
 <script>
 document.getElementById('copy').addEventListener('click', async function () {

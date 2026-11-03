@@ -809,7 +809,7 @@
   if (CFG) {
     $('srcNote').textContent = CFG.source;
     $('extraNote').textContent = CFG.note || '';
-    $('kitLink').remove();
+    if (!window.SITE_HOSTED) $('kitLink').remove();
   }
   $('statTotal').textContent = `· ${D['대학'].length}개 대학 · ${N.toLocaleString('ko-KR')}건`;
   refresh();

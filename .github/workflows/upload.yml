@@ -1,0 +1,24 @@
+name: 자료 올리기
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  pages: write
+
+jobs:
+  publish:
+    if: startsWith(github.event.issue.title, '[자료올리기]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/publish_site.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
