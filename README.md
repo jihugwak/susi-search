@@ -26,9 +26,7 @@
 
 ```
 index.html   마크업 + 스타일 (탭 5개)
-loader.js    주소의 번호에 맞는 자료를 불러와 앱 시작
 app.js       전체 로직 (검색/필터/집계/차트/모달)
-validate.js  번호별 자료 검사
 data.js      수시 입결 57,139행   ─┐
 links.js     대학 링크 206개       ├ 빌드 산출물, 직접 수정하지 말 것
 grade.js     등급 변환표 1,000행  ─┘
@@ -65,27 +63,6 @@ python3 -m http.server 8000   # http://localhost:8000
 원본은 Numbers 파일(`대학어디가(2023~2026)수시입결자료(남악고 김현석)ver0703.numbers`, 30MB)이고,
 `numbers-parser`로 시트를 추출해 `data.js` / `links.js` / `grade.js`를 생성했습니다.
 추출 스크립트는 저장소에 포함되어 있지 않습니다(원본 파일이 저장소 밖에 있음).
-
-## 선생님용 양식 (공개 키트)
-
-선생님이 Claude 앱에 자기 자료를 주면, 이 사이트의 양식에 넣어 **독립된 HTML 파일 하나**를 만들 수 있습니다. 서버가 없는 정적 파일이라 원본 사이트나 저장소가 없어져도 이미 만든 사이트는 계속 동작합니다.
-
-- 선생님용 안내: https://jihugwak.github.io/susi-search/teachers.html
-- 작업 안내(Claude용): [`api/v1/INSTRUCTIONS.md`](api/v1/INSTRUCTIONS.md)
-- 키트: `api/v1/susi-site-kit.zip` (`shell.html`, `build.py`, `sample.csv`, 안내문)
-- 양식에는 입결 자료가 없고, 대학 링크와 등급 변환표만 기본값으로 들어 있습니다.
-
-선생님이 이슈 양식(`.github/ISSUE_TEMPLATE/upload.yml`)에 파일을 첨부하면, GitHub Actions(`.github/workflows/upload.yml`)가 `scripts/publish_site.mjs`로 자료만 뽑아 `s/<번호>/site.json`에 커밋하고 주소를 답글로 남깁니다. 사이트는 `?s=번호`로 그 자료를 불러오며 화면 코드는 모두 같은 것을 씁니다. 올린 HTML의 코드는 저장하지 않고, 자료는 커밋 전과 불러올 때 `validate.js`로 검사합니다. 목록은 `s/`에 있습니다.
-
-- 자료를 바꿀 수 있는 사람은 올린 계정과 저장소 소유자뿐입니다. 한 계정은 자료를 5개까지 올릴 수 있습니다.
-- 문제가 있는 자료는 `s/<번호>/site.json`을 지우고 `s/index.json`에서 그 항목을 빼서 푸시합니다.
-- 테스트: `node scripts/test_publish.mjs`
-
-`app.js`나 `index.html`을 고쳤다면 공개 양식도 다시 만들어 함께 커밋합니다.
-
-```bash
-python3 scripts/make_shell.py
-```
 
 ## 원본 데이터의 알려진 결함과 보정
 

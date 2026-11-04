@@ -243,7 +243,7 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
         <button class="chip" data-m="realComp" aria-pressed="false">실경쟁률</button>
         <button class="chip" data-m="chuhap" aria-pressed="false">추합</button>
       </div>
-      <p class="hint2"><span id="yearSpan"></span> 매트릭스입니다. 지표 버튼으로 열 묶음을 켜고 끌 수 있고, 행을 클릭하면 그 학과의 연도별 추이 그래프가 열립니다.</p>
+      <p class="hint2">원본의 <b>NEW대학분석</b> 시트와 같은 4개년(2026~2023) 매트릭스입니다. 지표 버튼으로 열 묶음을 켜고 끌 수 있고, 행을 클릭하면 그 학과의 연도별 추이 그래프가 열립니다.</p>
     </div>
     <div class="summary"><b id="uTitle">대학을 선택하세요</b><span class="note" id="uScope"></span></div>
     <div class="tablewrap">
@@ -284,7 +284,7 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
           </select>
         </label>
       </div>
-      <p class="hint2">선택한 기준으로 묶어 연도별 값을 나란히 보여주고, 가장 최근 두 해의 변화량을 함께 표시합니다.</p>
+      <p class="hint2">원본의 <b>연도비교</b> 피벗에 해당합니다. 선택한 기준으로 묶어 연도별 값을 나란히 보여주고, 가장 최근 두 해의 변화량을 함께 표시합니다.</p>
     </div>
     <div class="summary"><b><span class="n" id="pCount">0</span>개 그룹</b><span class="note" id="pNote"></span></div>
     <div class="tablewrap">
@@ -308,7 +308,7 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
         </label>
         <div class="gout"><div class="k">해당 기준 백분위</div><div class="v" id="cvPctOut">–</div></div>
       </div>
-      <p class="hint2">백분위와 등급을 서로 변환하는 표입니다. 표의 기준 백분위 사이 값은 선형 보간합니다.<br><span id="gNote"></span></p>
+      <p class="hint2">원본의 <b>자체등급변환</b> 시트를 그대로 옮긴 것입니다. 표의 기준 백분위 사이 값은 선형 보간합니다.<br><span id="gNote"></span></p>
     </div>
     <div class="summary"><b>변환표</b><span class="note">백분위 100 → 0.1 (0.1 단위)</span></div>
     <div class="tablewrap" style="max-height:520px;overflow-y:auto">
@@ -325,7 +325,7 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
       <label class="f" style="max-width:280px">대학 찾기
         <input type="text" id="lQuery" placeholder="대학명 일부를 입력하세요" autocomplete="off">
       </label>
-      <p class="hint2">대학별 입학처·입결발표·대학알리미·종합전형가이드북 페이지로 바로 이동합니다.</p>
+      <p class="hint2">원본의 <b>대학링크</b> 시트입니다. 대학별 입학처·입결발표·대학알리미·종합전형가이드북 페이지로 바로 이동합니다. 원본의 학과안내자료 열은 전 대학이 비어 있어 뺐습니다.</p>
     </div>
     <div class="summary"><b><span class="n" id="lCount">0</span>개 대학</b></div>
     <div class="tablewrap">
@@ -358,13 +358,15 @@ footer{margin-top:28px;color:var(--muted);font-size:12px;line-height:1.7}
   </dialog>
 
   <footer>
-    데이터: <span id="srcNote">대학어디가(adiga.kr) 대학 발표자료 정리본 (남악고 김현석, ver 07.03)</span> · <span id="yearNote"></span> 수시 <span id="statTotal"></span><br>
+    데이터: 대학어디가(adiga.kr) 대학 발표자료 정리본 (남악고 김현석, ver 07.03) · 2023~2026학년도 수시 <span id="statTotal"></span><br>
     등급50%·등급70%는 최종등록자 상위 50%·70% 지점의 학생부 등급입니다. 대학이 발표한 자료의 집계 시점·기준에 따라 실제 요강과 다를 수 있으며, 지원 판단의 참고자료로만 사용하세요.<br>
-    <span id="extraNote">원본의 정시결과 시트는 표 서식만 있고 데이터 행이 비어 있어 이 사이트에는 정시 자료가 포함되지 않습니다.</span>
-    <span id="kitLink"><br><a href="s/">선생님별 자료 보기</a> · <a href="teachers.html">우리 학교 자료로 사이트 만들기 (선생님용)</a></span>
+    원본의 정시결과 시트는 표 서식만 있고 데이터 행이 비어 있어 이 사이트에는 정시 자료가 포함되지 않습니다.
   </footer>
 </div>
 <div class="tip" id="tip" hidden></div>
-<script src="loader.js"></script>
+<script src="data.js"></script>
+<script src="links.js"></script>
+<script src="grade.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

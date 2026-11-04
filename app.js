@@ -8,10 +8,6 @@
    모든 필터·집계·판정은 브라우저에서 수행된다. */
 (function () {
   'use strict';
-  if (!window.ADIGA_DATA) {
-    document.body.textContent = '이 파일은 빈 양식입니다. 입결 자료를 넣은 뒤 사용하세요.';
-    return;
-  }
   const RAW = window.ADIGA_DATA, LINKS = window.ADIGA_LINKS || {};
   // 자체등급변환 표: 원본의 5등급 열은 백분위 약 90 아래 구간에서 수식이 깨져
   // 8542.5 같은 값이 들어 있다. 9등급 열도 백분위 3.9 이하에서 9.0011로 범위를 넘는다.
@@ -578,7 +574,7 @@
     // 전형 × 학과 조합을 행으로, 연도를 열로 편다.
     const groups = new Map();
     for (const i of rowsByUniv.get(uc)) {
-      const key = adm[i] + '\u0000' + dept[i];
+      const key = adm[i] + ' ' + dept[i];
       if (!groups.has(key)) groups.set(key, { adm: adm[i], dept: dept[i], years: new Map() });
       groups.get(key).years.set(year[i], i);
     }
@@ -801,16 +797,6 @@
   $('lQuery').addEventListener('input', renderLinks);
   renderLinks();
 
-  // 학년도 범위는 데이터에서 계산하고, 출처 문구는 양식으로 만든 사이트의 설정을 따른다.
-  const yearRange = YEARS.length > 1 ? `${YEARS[YEARS.length - 1]}~${YEARS[0]}학년도` : `${YEARS[0]}학년도`;
-  $('yearNote').textContent = yearRange;
-  $('yearSpan').textContent = `${YEARS.length}개년(${yearRange})`;
-  const CFG = window.SITE_CONFIG;
-  if (CFG) {
-    $('srcNote').textContent = CFG.source;
-    $('extraNote').textContent = CFG.note || '';
-    if (!window.SITE_HOSTED) $('kitLink').remove();
-  }
   $('statTotal').textContent = `· ${D['대학'].length}개 대학 · ${N.toLocaleString('ko-KR')}건`;
   refresh();
   applyHash();
